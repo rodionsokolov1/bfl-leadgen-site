@@ -1,0 +1,43 @@
+:root {
+  --paper: #fbf8ef;
+  --paper-light: #fffdf8;
+  --ink: #10130f;
+  --muted: #545952;
+  --green: #728f43;
+  --green-dark: #365f31;
+  --green-soft: #e9edde;
+  --blue: #1e66d5;
+  --blue-soft: #e9f0fb;
+  --orange: #f24e18;
+  --orange-soft: #fce9df;
+  --container: 1720px;
+  --page-gutter: clamp(18px, 4vw, 64px);
+  --font-main: Arial, Helvetica, "Segoe UI", sans-serif;
+  --font-note: "Segoe Print", "Bradley Hand", cursive;
+}
+
+* { box-sizing: border-box; }
+html { overflow-x: hidden; scroll-behavior: smooth; }
+body {
+  min-width: 320px;
+  margin: 0;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(116, 143, 69, .035), transparent 24%),
+    radial-gradient(circle at 90% 75%, rgba(183, 150, 87, .035), transparent 28%),
+    repeating-linear-gradient(0deg, rgba(36, 31, 21, .014) 0 1px, transparent 1px 4px),
+    var(--paper);
+  color: var(--ink);
+  font-family: var(--font-main);
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+button, input, textarea, select { font: inherit; }
+img { max-width: 100%; }
+::selection { background: #d8e7c0; color: #15200f; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
