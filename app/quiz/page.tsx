@@ -4,7 +4,6 @@ import type { CSSProperties } from "react";
 import { SiteFooter } from "@/components/home/SiteFooter";
 import { Header } from "@/components/layout/Header";
 import { ProgressiveFunnel } from "@/components/small-company/ProgressiveFunnel";
-import { FinalTelegramCTA } from "@/components/small-company/FinalTelegramCTA";
 import { ProofVideoTabs } from "@/components/small-company/ProofVideoTabs";
 import { SmallPageAnalytics } from "@/components/small-company/SmallPageAnalytics";
 import { FunnelIntro, SmallCompanyHero, TrustSection } from "@/components/small-company/StaticSections";
@@ -29,7 +28,6 @@ export default function QuizPage() {
       <ProgressiveFunnel />
       <TrustSection />
       <ProofVideoTabs />
-      <FinalTelegramCTA />
       <SiteFooter />
     </main>
   );

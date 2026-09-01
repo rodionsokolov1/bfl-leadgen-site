@@ -1,82 +1,76 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
-import { funnelAdviceContent, funnelThresholds, type FunnelMetric, type MetricStatus } from "@/config/funnel";
-import { calculateFunnel, estimatedAcquisitionSpend } from "@/lib/funnel/calculations";
-import { diagnoseMetric } from "@/lib/funnel/diagnostics";
+import { benchmarkLabels, benchmarkReactions } from "@/config/funnel";
 import { trackEvent } from "@/lib/analytics/events";
-import type { FunnelField, FunnelInput } from "@/types/funnel";
+import { getAttribution } from "@/lib/attribution";
+import { calculateFunnel, estimatedAcquisitionSpend } from "@/lib/funnel/calculations";
+import { diagnoseMetric, findPrimaryBottleneck, getFunnelStatuses } from "@/lib/funnel/diagnostics";
+import { funnelFieldLabels, validateFunnelField, validateFunnelInput } from "@/lib/funnel/validation";
+import type { FunnelField, FunnelInput, FunnelMetricKey, FunnelStatus } from "@/types/funnel";
 
 import { FunnelResults } from "./FunnelResults";
 import styles from "./funnel.module.css";
 
-const storageKey = "small-company:funnel:v1";
+const storageKey = "small-company:funnel:v2";
 
 type FunnelValues = Record<FunnelField, string>;
 type Errors = Partial<Record<FunnelField, string>>;
 
 const emptyValues: FunnelValues = {
-  leads: "",
-  avgCpl: "",
-  contacted: "",
-  appointments: "",
-  heldMeetings: "",
-  contracts: "",
+  leadsCount: "",
+  costPerLead: "",
+  contactedCount: "",
+  meetingsBooked: "",
+  meetingsHeld: "",
+  contractsCount: "",
 };
 
 const stepFields: FunnelField[][] = [
-  ["leads", "avgCpl"],
-  ["contacted"],
-  ["appointments"],
-  ["heldMeetings"],
-  ["contracts"],
+  ["leadsCount", "costPerLead"],
+  ["contactedCount"],
+  ["meetingsBooked"],
+  ["meetingsHeld"],
+  ["contractsCount"],
 ];
 
 const stepEvents = [
-  "SMALL_STEP_LEADS_COMPLETED",
-  "SMALL_STEP_CONTACT_COMPLETED",
-  "SMALL_STEP_APPOINTMENT_COMPLETED",
-  "SMALL_STEP_HELD_COMPLETED",
-  "SMALL_STEP_CONTRACT_COMPLETED",
+  "FUNNEL_STEP_1_COMPLETED",
+  "FUNNEL_STEP_2_COMPLETED",
+  "FUNNEL_STEP_3_COMPLETED",
+  "FUNNEL_STEP_4_COMPLETED",
+  "FUNNEL_STEP_5_COMPLETED",
 ] as const;
 
-const fieldLabels: Record<FunnelField, string> = {
-  leads: "Количество лидов",
-  avgCpl: "Средняя стоимость лида",
-  contacted: "Дозвонились до",
-  appointments: "Назначено встреч / квалов",
-  heldMeetings: "Встреч состоялось",
-  contracts: "Заключено договоров",
-};
-
 function numeric(values: FunnelValues, field: FunnelField): number {
+  if (values[field] === "") return Number.NaN;
   const value = Number(values[field]);
-  return Number.isFinite(value) && values[field] !== "" ? value : 0;
+  return Number.isFinite(value) ? value : Number.NaN;
 }
 
 function toInput(values: FunnelValues): FunnelInput {
   return {
-    leads: numeric(values, "leads"),
-    avgCpl: numeric(values, "avgCpl"),
-    contacted: numeric(values, "contacted"),
-    appointments: numeric(values, "appointments"),
-    heldMeetings: numeric(values, "heldMeetings"),
-    contracts: numeric(values, "contracts"),
+    leadsCount: numeric(values, "leadsCount"),
+    costPerLead: numeric(values, "costPerLead"),
+    contactedCount: numeric(values, "contactedCount"),
+    meetingsBooked: numeric(values, "meetingsBooked"),
+    meetingsHeld: numeric(values, "meetingsHeld"),
+    contractsCount: numeric(values, "contractsCount"),
   };
 }
 
+function displayInput(values: FunnelValues): FunnelInput {
+  const input = toInput(values);
+  return (Object.keys(input) as FunnelField[]).reduce<FunnelInput>((result, field) => {
+    result[field] = Number.isFinite(input[field]) ? input[field] : 0;
+    return result;
+  }, { ...input });
+}
+
 function validateField(field: FunnelField, values: FunnelValues): string | undefined {
-  const raw = values[field];
-  const value = Number(raw);
-  if (raw === "" || !Number.isFinite(value)) return "Укажи число.";
-  if (field === "leads" && value <= 0) return "Количество лидов должно быть больше нуля.";
-  if (field === "avgCpl" && value <= 0) return "Стоимость лида должна быть больше нуля.";
-  if (field === "contacted" && (value < 0 || value > numeric(values, "leads"))) return `Значение должно быть от 0 до ${numeric(values, "leads")}.`;
-  if (field === "appointments" && (value < 0 || value > numeric(values, "contacted"))) return `Значение должно быть от 0 до ${numeric(values, "contacted")}.`;
-  if (field === "heldMeetings" && (value < 0 || value > numeric(values, "appointments"))) return `Значение должно быть от 0 до ${numeric(values, "appointments")}.`;
-  if (field === "contracts" && (value < 0 || value > numeric(values, "heldMeetings"))) return `Значение должно быть от 0 до ${numeric(values, "heldMeetings")}.`;
-  return undefined;
+  if (values[field] === "") return "Укажи число.";
+  return validateFunnelField(field, toInput(values));
 }
 
 function validateStep(step: number, values: FunnelValues): Errors {
@@ -88,32 +82,58 @@ function validateStep(step: number, values: FunnelValues): Errors {
 }
 
 function formatMoney(value: number | null): string {
-  if (value === null) return "—";
-  return `${new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(value)} ₽`;
+  if (value === null || !Number.isFinite(value)) return "не рассчитывается";
+  return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(value) + " ₽";
 }
 
 function formatNumber(value: number | null, maximumFractionDigits = 1): string {
-  if (value === null) return "—";
+  if (value === null || !Number.isFinite(value)) return "не рассчитывается";
   return new Intl.NumberFormat("ru-RU", { maximumFractionDigits }).format(value);
 }
 
 function formatPercent(value: number | null): string {
-  if (value === null) return "—";
-  return `${formatNumber(value * 100)}%`;
+  return value === null ? "не рассчитывается" : formatNumber(value * 100) + "%";
 }
 
-function StageInsight({ metric, status }: { metric: FunnelMetric; status: MetricStatus }) {
-  if (status === "unscored") {
-    return <p className={styles.unscored}>Показатель посчитан без оценки: согласованный benchmark для этого этапа пока не задан.</p>;
-  }
-  if (status === "good" || status === "excellent") return null;
-  const advice = funnelAdviceContent[metric];
+function AnimatedNumber({ value }: { value: number }) {
+  const previous = useRef(0);
+  const [displayed, setDisplayed] = useState(0);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const frame = window.requestAnimationFrame(() => {
+        previous.current = value;
+        setDisplayed(value);
+      });
+      return () => window.cancelAnimationFrame(frame);
+    }
+    const from = previous.current;
+    const startedAt = performance.now();
+    let frame = 0;
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - startedAt) / 320);
+      setDisplayed(from + (value - from) * progress);
+      if (progress < 1) frame = window.requestAnimationFrame(tick);
+      else previous.current = value;
+    };
+    frame = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(frame);
+  }, [value]);
+
+  return <>{formatNumber(displayed, 0)}</>;
+}
+
+function BenchmarkReaction({ metric, status }: { metric: FunnelMetricKey; status: FunnelStatus | null }) {
+  if (!status) return null;
+  const reaction = benchmarkReactions[metric][status];
   return (
-    <details className={styles.insight} open={metric === "cpl"}>
-      <summary>{advice.title}</summary>
-      <ul>{advice.items.map((item) => <li key={item}>{item}</li>)}</ul>
-      <strong>{advice.footer}</strong>
-    </details>
+    <div className={styles.reaction}>
+      <span className={styles.statusBadge} data-status={status}>{benchmarkLabels[metric][status]}</span>
+      <strong>{reaction.title}</strong>
+      {reaction.body ? <p>{reaction.body}</p> : null}
+      {reaction.advice ? <ul>{reaction.advice.map((item) => <li key={item}>{item}</li>)}</ul> : null}
+      {reaction.insight ? <p className={styles.handNote}>{reaction.insight}</p> : null}
+    </div>
   );
 }
 
@@ -122,26 +142,27 @@ type FieldProps = {
   suffix?: string;
   value: string;
   error?: string;
+  integer?: boolean;
   onBlur: () => void;
   onChange: (value: string) => void;
 };
 
-function FunnelFieldInput({ field, suffix, value, error, onBlur, onChange }: FieldProps) {
-  const errorId = `${field}-error`;
+function FunnelFieldInput({ field, suffix, value, error, integer = true, onBlur, onChange }: FieldProps) {
+  const errorId = field + "-error";
   return (
     <label className={styles.field}>
-      <span>{fieldLabels[field]}</span>
-      <span className={`${styles.inputShell} ${error ? styles.inputError : ""}`}>
+      <span>{funnelFieldLabels[field]}</span>
+      <span className={[styles.inputShell, error ? styles.inputError : ""].join(" ")}>
         <input
           aria-describedby={error ? errorId : undefined}
           aria-invalid={Boolean(error)}
-          inputMode="decimal"
+          inputMode={integer ? "numeric" : "decimal"}
           min="0"
           name={field}
           onBlur={onBlur}
           onChange={(event) => onChange(event.target.value)}
           placeholder="0"
-          step="any"
+          step={integer ? "1" : "any"}
           type="number"
           value={value}
         />
@@ -152,144 +173,180 @@ function FunnelFieldInput({ field, suffix, value, error, onBlur, onChange }: Fie
   );
 }
 
-type StageProps = {
-  completed: boolean;
+type StepProps = {
   errors: Errors;
-  number: number;
   onBlur: (field: FunnelField) => void;
   onChange: (field: FunnelField, value: string) => void;
   onComplete: () => void;
+  onBack: (() => void) | null;
   values: FunnelValues;
 };
 
-function StepShell({ children, completed, number, title }: { children: ReactNode; completed: boolean; number: number; title: string }) {
+function StepShell({ children, number, title, help, onBack }: { children: ReactNode; number: number; title: string; help?: string; onBack: (() => void) | null }) {
   return (
-    <article className={`${styles.step} ${completed ? styles.completed : ""}`} id={`funnel-step-${number}`}>
+    <article className={styles.step} key={number}>
       <header className={styles.stepHeader}>
-        <span>ШАГ {number}</span>
-        {completed ? <strong>готово ✓</strong> : null}
+        <span>ВОПРОС {number}</span>
+        {onBack ? <button type="button" onClick={onBack}>← Назад</button> : null}
       </header>
-      <h3>{title}</h3>
+      <h3 id="current-funnel-question" tabIndex={-1}>{title}</h3>
+      {help ? <p className={styles.stepHelp}>{help}</p> : null}
       {children}
     </article>
   );
 }
 
-function StepOne(props: StageProps) {
-  const input = toInput(props.values);
+function StepOne(props: StepProps) {
+  const input = displayInput(props.values);
   const result = calculateFunnel(input);
+  const valid = props.values.leadsCount !== "" && props.values.costPerLead !== "" && !props.errors.leadsCount && !props.errors.costPerLead;
+  const status = valid ? diagnoseMetric(input.costPerLead, "costPerLead") : null;
   return (
-    <StepShell completed={props.completed} number={1} title="Сколько заявок ты получил за последний полный месяц?">
+    <StepShell number={1} title="Сколько заявок ты получил за последний полный месяц?" onBack={props.onBack}>
       <div className={styles.fieldGrid}>
-        <FunnelFieldInput field="leads" suffix="лидов" value={props.values.leads} error={props.errors.leads} onBlur={() => props.onBlur("leads")} onChange={(value) => props.onChange("leads", value)} />
-        <FunnelFieldInput field="avgCpl" suffix="₽" value={props.values.avgCpl} error={props.errors.avgCpl} onBlur={() => props.onBlur("avgCpl")} onChange={(value) => props.onChange("avgCpl", value)} />
+        <FunnelFieldInput field="leadsCount" suffix="заявок" value={props.values.leadsCount} error={props.errors.leadsCount} onBlur={() => props.onBlur("leadsCount")} onChange={(value) => props.onChange("leadsCount", value)} />
+        <FunnelFieldInput field="costPerLead" suffix="₽" value={props.values.costPerLead} error={props.errors.costPerLead} integer={false} onBlur={() => props.onBlur("costPerLead")} onChange={(value) => props.onChange("costPerLead", value)} />
       </div>
-      {input.leads > 0 && input.avgCpl > 0 ? (
-        <>
+      {valid ? (
+        <div aria-live="polite">
           <div className={styles.liveResult}>
             <span>На входе получается</span>
-            <strong>{formatNumber(input.leads)} лидов</strong>
+            <strong>{formatNumber(input.leadsCount, 0)} заявок</strong>
             <strong>≈ {formatMoney(result.adSpend)} рекламного бюджета</strong>
-            <p>Пока это просто CPL. Самое интересное начинается дальше.</p>
+            <span>Средняя стоимость заявки — {formatMoney(input.costPerLead)}</span>
           </div>
-          <StageInsight metric="cpl" status={diagnoseMetric(input.avgCpl, funnelThresholds.cpl)} />
-        </>
+          <BenchmarkReaction metric="costPerLead" status={status} />
+        </div>
       ) : null}
-      <button className={styles.nextButton} type="button" onClick={props.onComplete}>Что произошло с этими лидами? <span>→</span></button>
+      <button className={styles.nextButton} type="button" onClick={props.onComplete}>Сколько из них удалось дозвониться? <span>→</span></button>
     </StepShell>
   );
 }
 
-function StepTwo(props: StageProps) {
-  const input = toInput(props.values);
+function StepTwo(props: StepProps) {
+  const input = displayInput(props.values);
   const result = calculateFunnel(input);
+  const valid = props.values.contactedCount !== "" && !props.errors.contactedCount;
+  const status = valid ? diagnoseMetric(result.contactRate, "contactRate") : null;
   return (
-    <StepShell completed={props.completed} number={2} title="До скольких из этих лидов вы реально дозвонились?">
-      <FunnelFieldInput field="contacted" suffix="человек" value={props.values.contacted} error={props.errors.contacted} onBlur={() => props.onBlur("contacted")} onChange={(value) => props.onChange("contacted", value)} />
-      {props.values.contacted !== "" && !props.errors.contacted ? (
-        <>
+    <StepShell number={2} title="До скольких из этих людей вы реально дозвонились?" onBack={props.onBack}>
+      <FunnelFieldInput field="contactedCount" suffix="чел." value={props.values.contactedCount} error={props.errors.contactedCount} onBlur={() => props.onBlur("contactedCount")} onChange={(value) => props.onChange("contactedCount", value)} />
+      {valid ? (
+        <div aria-live="polite">
           <div className={styles.liveResult}>
-            <strong>Дозвон: {formatPercent(result.contactRate)}</strong>
-            <span>Стоимость состоявшегося контакта: {formatMoney(result.costPerContact)}</span>
-            <span>Не удалось связаться: {formatNumber(result.losses.beforeContact)} контактов</span>
-            <span>На их привлечение пришлось ≈ {formatMoney(estimatedAcquisitionSpend(result.losses.beforeContact, input.avgCpl))} рекламного расхода</span>
-            <p className={styles.handNote}>За этот контакт уже заплачено.</p>
+            <strong>Дозвон — {formatPercent(result.contactRate)}</strong>
+            <span>Стоимость состоявшегося контакта — {formatMoney(result.costPerContact)}</span>
+            <span>{formatNumber(result.losses.beforeContact, 0)} заявок остались без разговора</span>
+            <span>На их привлечение пришлось ≈ {formatMoney(estimatedAcquisitionSpend(result.losses.beforeContact, input.costPerLead))} рекламного бюджета</span>
           </div>
-          <StageInsight metric="contactRate" status={diagnoseMetric(result.contactRate, funnelThresholds.contactRate)} />
-        </>
+          <BenchmarkReaction metric="contactRate" status={status} />
+        </div>
       ) : null}
-      <button className={styles.nextButton} type="button" onClick={props.onComplete}>Перейти к назначениям <span>→</span></button>
+      <button className={styles.nextButton} type="button" onClick={props.onComplete}>Сколько встреч удалось назначить? <span>→</span></button>
     </StepShell>
   );
 }
 
-function StepThree(props: StageProps) {
-  const result = calculateFunnel(toInput(props.values));
+function StepThree(props: StepProps) {
+  const input = displayInput(props.values);
+  const result = calculateFunnel(input);
+  const valid = props.values.meetingsBooked !== "" && !props.errors.meetingsBooked;
+  const status = valid ? diagnoseMetric(result.bookingRate, "bookingRate") : null;
   return (
-    <StepShell completed={props.completed} number={3} title="Скольким из дозвонившихся назначили встречу?">
-      <FunnelFieldInput field="appointments" value={props.values.appointments} error={props.errors.appointments} onBlur={() => props.onBlur("appointments")} onChange={(value) => props.onChange("appointments", value)} />
-      {props.values.appointments !== "" && !props.errors.appointments ? <><div className={styles.liveResult}><strong>Дозвон → назначение: {formatPercent(result.appointmentRate)}</strong><span>Стоимость назначенной встречи: {formatMoney(result.costPerAppointment)}</span></div><StageInsight metric="appointmentRate" status={diagnoseMetric(result.appointmentRate, funnelThresholds.appointmentRate)} /></> : null}
-      <button className={styles.nextButton} type="button" onClick={props.onComplete}>Проверить доходимость <span>→</span></button>
-    </StepShell>
-  );
-}
-
-function StepFour(props: StageProps) {
-  const result = calculateFunnel(toInput(props.values));
-  return (
-    <StepShell completed={props.completed} number={4} title="Сколько назначенных встреч реально состоялось?">
-      <FunnelFieldInput field="heldMeetings" value={props.values.heldMeetings} error={props.errors.heldMeetings} onBlur={() => props.onBlur("heldMeetings")} onChange={(value) => props.onChange("heldMeetings", value)} />
-      {props.values.heldMeetings !== "" && !props.errors.heldMeetings ? <><div className={styles.liveResult}><strong>Доходимость: {formatPercent(result.showRate)}</strong><span>Стоимость состоявшейся встречи: {formatMoney(result.costPerHeldMeeting)}</span></div><StageInsight metric="showRate" status={diagnoseMetric(result.showRate, funnelThresholds.showRate)} /></> : null}
-      <button className={styles.nextButton} type="button" onClick={props.onComplete}>Перейти к договорам <span>→</span></button>
-    </StepShell>
-  );
-}
-
-function StepFive(props: StageProps) {
-  const result = calculateFunnel(toInput(props.values));
-  return (
-    <StepShell completed={props.completed} number={5} title="Сколько состоявшихся встреч закончились договором?">
-      <FunnelFieldInput field="contracts" value={props.values.contracts} error={props.errors.contracts} onBlur={() => props.onBlur("contracts")} onChange={(value) => props.onChange("contracts", value)} />
-      {props.values.contracts !== "" && !props.errors.contracts ? (
-        <>
+    <StepShell number={3} title="Скольким из тех, до кого дозвонились, назначили встречу?" help="Онлайн или в офисе — неважно. Считаем людей, которые согласились на следующий целевой шаг." onBack={props.onBack}>
+      <FunnelFieldInput field="meetingsBooked" value={props.values.meetingsBooked} error={props.errors.meetingsBooked} onBlur={() => props.onBlur("meetingsBooked")} onChange={(value) => props.onChange("meetingsBooked", value)} />
+      {valid ? (
+        <div aria-live="polite">
           <div className={styles.liveResult}>
-            <strong>Встреча → договор: {formatPercent(result.closeRate)}</strong>
-            <span>Лид → договор: {formatPercent(result.leadToContractRate)}</span>
-            <span>Стоимость договора: {formatMoney(result.costPerContract)}</span>
-            <span>На один договор требуется ≈ {formatNumber(result.leadsPerContract)} лидов</span>
+            <strong>Дозвон → встреча — {formatPercent(result.bookingRate)}</strong>
+            <span>Стоимость назначенной встречи — {formatMoney(result.costPerBookedMeeting)}</span>
+            {result.bookingRate === null ? <span>Показатель не рассчитывается, потому что состоявшихся разговоров пока нет.</span> : null}
           </div>
-          <StageInsight metric="closeRate" status={diagnoseMetric(result.closeRate, funnelThresholds.closeRate)} />
-        </>
+          <BenchmarkReaction metric="bookingRate" status={status} />
+        </div>
       ) : null}
-      <button className={styles.nextButton} type="button" onClick={props.onComplete}>Показать мою воронку <span>→</span></button>
+      <button className={styles.nextButton} type="button" onClick={props.onComplete}>А сколько встреч реально состоялось? <span>→</span></button>
     </StepShell>
   );
 }
 
-function FunnelVisualization({ completedSteps, input }: { completedSteps: number; input: FunnelInput }) {
+function StepFour(props: StepProps) {
+  const input = displayInput(props.values);
+  const result = calculateFunnel(input);
+  const valid = props.values.meetingsHeld !== "" && !props.errors.meetingsHeld;
+  const status = valid ? diagnoseMetric(result.showRate, "showRate") : null;
+  return (
+    <StepShell number={4} title="Сколько назначенных встреч реально состоялось?" onBack={props.onBack}>
+      <FunnelFieldInput field="meetingsHeld" value={props.values.meetingsHeld} error={props.errors.meetingsHeld} onBlur={() => props.onBlur("meetingsHeld")} onChange={(value) => props.onChange("meetingsHeld", value)} />
+      {valid ? (
+        <div aria-live="polite">
+          <div className={styles.liveResult}>
+            <strong>Доходимость — {formatPercent(result.showRate)}</strong>
+            <span>Стоимость состоявшейся встречи — {formatMoney(result.costPerHeldMeeting)}</span>
+            {result.showRate === null ? <span>Показатель не рассчитывается, потому что назначенных встреч пока нет.</span> : null}
+          </div>
+          <BenchmarkReaction metric="showRate" status={status} />
+        </div>
+      ) : null}
+      <button className={styles.nextButton} type="button" onClick={props.onComplete}>Сколько встреч закончились договором? <span>→</span></button>
+    </StepShell>
+  );
+}
+
+function StepFive(props: StepProps) {
+  const input = displayInput(props.values);
+  const result = calculateFunnel(input);
+  const valid = props.values.contractsCount !== "" && !props.errors.contractsCount;
+  const status = valid ? diagnoseMetric(result.closeRate, "closeRate") : null;
+  return (
+    <StepShell number={5} title="Сколько состоявшихся встреч закончились договором?" onBack={props.onBack}>
+      <FunnelFieldInput field="contractsCount" value={props.values.contractsCount} error={props.errors.contractsCount} onBlur={() => props.onBlur("contractsCount")} onChange={(value) => props.onChange("contractsCount", value)} />
+      {valid ? (
+        <div aria-live="polite">
+          <div className={styles.liveResult}>
+            <strong>Встреча → договор — {formatPercent(result.closeRate)}</strong>
+            <span>Стоимость договора — {formatMoney(result.costPerContract)}</span>
+            <span>На один договор приходится ≈ {formatNumber(result.leadsPerContract)} заявок</span>
+            {result.closeRate === null ? <span>Показатель не рассчитывается, потому что состоявшихся встреч пока нет.</span> : null}
+          </div>
+          <BenchmarkReaction metric="closeRate" status={status} />
+          <p className={styles.importantCopy}>До состоявшейся встречи реклама уже проделала значительную часть своей работы. На этом этапе проблема может находиться совсем не в качестве заявок.</p>
+        </div>
+      ) : null}
+      <button className={styles.nextButton} type="button" onClick={props.onComplete}>Показать мою воронку целиком <span>→</span></button>
+    </StepShell>
+  );
+}
+
+function FunnelVisualization({ completedSteps, currentStep, input, onEdit }: { completedSteps: number; currentStep: number; input: FunnelInput; onEdit: (step: number) => void }) {
   const result = calculateFunnel(input);
   const stages = [
-    { label: "Лиды", count: input.leads, meta: formatMoney(input.avgCpl) },
-    { label: "Дозвон", count: input.contacted, meta: formatPercent(result.contactRate) },
-    { label: "Назначено", count: input.appointments, meta: formatPercent(result.appointmentRate) },
-    { label: "Состоялось", count: input.heldMeetings, meta: formatPercent(result.showRate) },
-    { label: "Договоры", count: input.contracts, meta: formatPercent(result.closeRate) },
+    { label: "Заявки", count: input.leadsCount, meta: formatMoney(input.costPerLead) },
+    { label: "Состоявшиеся разговоры", count: input.contactedCount, meta: formatPercent(result.contactRate) },
+    { label: "Назначенные встречи", count: input.meetingsBooked, meta: formatPercent(result.bookingRate) },
+    { label: "Состоявшиеся встречи", count: input.meetingsHeld, meta: formatPercent(result.showRate) },
+    { label: "Договоры", count: input.contractsCount, meta: formatPercent(result.closeRate) },
   ];
   return (
-    <aside className={styles.visual} aria-label="Визуализация заполненной части воронки">
+    <aside className={styles.visual} aria-label="Заполненная часть воронки">
       <p className={styles.visualTitle}>Твоя воронка дорисовывается здесь</p>
       <svg aria-hidden="true" className={styles.funnelOutline} viewBox="0 0 420 550">
         <path d="M28 34 C110 45 309 18 392 36 L330 512 C255 529 166 529 91 512 Z" />
-        {stages.slice(0, completedSteps).map((_, index) => <path d={`M${48 + index * 12} ${125 + index * 88} Q210 ${138 + index * 88} ${372 - index * 12} ${125 + index * 88}`} key={index} />)}
+        {stages.slice(0, completedSteps).map((_, index) => <path d={"M" + (48 + index * 12) + " " + (125 + index * 88) + " Q210 " + (138 + index * 88) + " " + (372 - index * 12) + " " + (125 + index * 88)} key={index} />)}
       </svg>
       <div className={styles.visualStages}>
         {stages.slice(0, completedSteps).map((stage, index) => (
-          <div className={styles.visualStage} key={stage.label} style={{ width: `${100 - index * 10}%` }}>
-            <span>{stage.label}</span><strong>{formatNumber(stage.count)}</strong><small>{stage.meta}</small>
-          </div>
+          <button
+            className={[styles.visualStage, currentStep === index + 1 ? styles.visualStageActive : ""].join(" ")}
+            key={stage.label}
+            onClick={() => onEdit(index + 1)}
+            style={{ width: (100 - index * 10) + "%" }}
+            type="button"
+          >
+            <span>{stage.label}</span><strong><AnimatedNumber value={stage.count} /></strong><small>{stage.meta}</small>
+          </button>
         ))}
       </div>
-      {completedSteps > 1 ? <p className={styles.visualNote}>За этот контакт уже заплачено.</p> : null}
     </aside>
   );
 }
@@ -298,26 +355,26 @@ export function ProgressiveFunnel() {
   const [hydrated, setHydrated] = useState(false);
   const [started, setStarted] = useState(false);
   const [values, setValues] = useState<FunnelValues>(emptyValues);
+  const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState(0);
   const [touched, setTouched] = useState<Partial<Record<FunnelField, boolean>>>({});
   const [attempted, setAttempted] = useState<Partial<Record<number, boolean>>>({});
-  const input = useMemo(() => toInput(values), [values]);
-  const isFunnelValid = useMemo(() => stepFields.every((_, index) => Object.keys(validateStep(index + 1, values)).length === 0), [values]);
-  const visibleSteps = started ? Math.min(5, completedSteps + 1) : 0;
+  const input = useMemo(() => displayInput(values), [values]);
+  const isFunnelValid = useMemo(() => Object.keys(validateFunnelInput(toInput(values))).length === 0, [values]);
 
   useEffect(() => {
     const hydrationTimer = window.setTimeout(() => {
       try {
         const stored = window.sessionStorage.getItem(storageKey);
         if (stored) {
-          const parsed = JSON.parse(stored) as { started?: boolean; values?: Partial<FunnelValues>; completedSteps?: number };
+          const parsed = JSON.parse(stored) as { started?: boolean; values?: Partial<FunnelValues>; currentStep?: number; completedSteps?: number };
           setStarted(Boolean(parsed.started));
           setValues({ ...emptyValues, ...parsed.values });
-          const restoredSteps = Math.min(5, Math.max(0, parsed.completedSteps ?? 0));
-          setCompletedSteps(restoredSteps);
+          setCurrentStep(Math.min(5, Math.max(1, parsed.currentStep ?? 1)));
+          setCompletedSteps(Math.min(5, Math.max(0, parsed.completedSteps ?? 0)));
         }
       } catch {
-        // A blocked sessionStorage must not make the calculator unusable.
+        // A blocked sessionStorage must not make the diagnostic unusable.
       } finally {
         setHydrated(true);
       }
@@ -327,9 +384,8 @@ export function ProgressiveFunnel() {
 
   const beginFunnel = useCallback(() => {
     setStarted(true);
-    if (!started) {
-      trackEvent("SMALL_FUNNEL_STARTED", { segment: "small_company" });
-    }
+    setCurrentStep(1);
+    if (!started) trackEvent("FUNNEL_DIAGNOSTIC_STARTED", { segment: "small_company" });
   }, [started]);
 
   useEffect(() => {
@@ -344,52 +400,93 @@ export function ProgressiveFunnel() {
   useEffect(() => {
     if (!hydrated) return;
     try {
-      window.sessionStorage.setItem(storageKey, JSON.stringify({ started, values, completedSteps, isValid: isFunnelValid }));
+      window.sessionStorage.setItem(storageKey, JSON.stringify({ started, values, currentStep, completedSteps, isValid: isFunnelValid }));
     } catch {
-      // Keep all state in memory when storage is unavailable.
+      // Keep the state in memory when storage is unavailable.
     }
-    window.dispatchEvent(new CustomEvent("small-funnel-state", { detail: { completedSteps, input, isValid: isFunnelValid } }));
-  }, [completedSteps, hydrated, input, isFunnelValid, started, values]);
+  }, [completedSteps, currentStep, hydrated, isFunnelValid, started, values]);
 
-  const errors = useMemo(() => {
-    return stepFields.flat().reduce<Errors>((result, field) => {
-      const step = stepFields.findIndex((fields) => fields.includes(field)) + 1;
-      if (touched[field] || attempted[step]) {
-        const error = validateField(field, values);
-        if (error) result[field] = error;
-      }
-      return result;
-    }, {});
-  }, [attempted, touched, values]);
+  const errors = useMemo(() => stepFields.flat().reduce<Errors>((result, field) => {
+    const step = stepFields.findIndex((fields) => fields.includes(field)) + 1;
+    if (touched[field] || attempted[step]) {
+      const error = validateField(field, values);
+      if (error) result[field] = error;
+    }
+    return result;
+  }, {}), [attempted, touched, values]);
+
+  function focusQuestion() {
+    window.setTimeout(() => {
+      document.getElementById("current-funnel-question")?.focus({ preventScroll: true });
+      document.getElementById("diagnostic-shell")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 80);
+  }
 
   function handleChange(field: FunnelField, value: string) {
-    setValues((current) => ({ ...current, [field]: value }));
+    setValues((current) => {
+      const nextValues = { ...current, [field]: value };
+      if (value === "0") {
+        const fieldIndex = stepFields.flat().indexOf(field);
+        for (const downstream of stepFields.flat().slice(fieldIndex + 1)) {
+          if (downstream !== "costPerLead") nextValues[downstream] = "0";
+        }
+      }
+      return nextValues;
+    });
     setTouched((current) => ({ ...current, [field]: true }));
   }
 
   function handleComplete(step: number) {
     setAttempted((current) => ({ ...current, [step]: true }));
-    const stepErrors = validateStep(step, values);
-    if (Object.keys(stepErrors).length > 0) return;
-    setCompletedSteps((current) => Math.max(current, step));
-    if (step > completedSteps) {
+    if (Object.keys(validateStep(step, values)).length > 0) return;
+    const isNewCompletion = step > completedSteps;
+    const nextCompleted = Math.max(completedSteps, step);
+    setCompletedSteps(nextCompleted);
+    if (isNewCompletion) {
       trackEvent(stepEvents[step - 1], { segment: "small_company", step });
-      if (step === 5) trackEvent("SMALL_FUNNEL_RESULT_VIEWED", { segment: "small_company" });
     }
-    const nextStep = step + 1;
-    window.setTimeout(() => {
-      document.getElementById(nextStep <= 5 ? `funnel-step-${nextStep}` : "funnel-complete")?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 120);
+    if (step < 5) {
+      setCurrentStep(step + 1);
+      focusQuestion();
+      return;
+    }
+    if (Object.keys(validateFunnelInput(toInput(values))).length === 0) {
+      const metrics = calculateFunnel(input);
+      const statuses = getFunnelStatuses(input, metrics);
+      const attributionContext = getAttribution();
+      const attribution = { ...attributionContext.firstTouch, ...attributionContext.current };
+      trackEvent("FUNNEL_DIAGNOSTIC_COMPLETED", {
+        primary_bottleneck: findPrimaryBottleneck(input, metrics, statuses),
+        statuses: JSON.stringify(statuses),
+        tracking_id: attribution.tracking_id,
+        utm_source: attribution.utm_source,
+        utm_medium: attribution.utm_medium,
+        utm_campaign: attribution.utm_campaign,
+      });
+      window.setTimeout(() => document.getElementById("funnel-results")?.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+    }
   }
 
-  const common = (number: number): Omit<StageProps, "number"> => ({
-    completed: completedSteps >= number && Object.keys(validateStep(number, values)).length === 0,
+  function editStep(step: number) {
+    if (step > completedSteps) return;
+    setCurrentStep(step);
+    focusQuestion();
+  }
+
+  const common: StepProps = {
     errors,
+    onBack: currentStep > 1 ? () => { setCurrentStep((step) => step - 1); focusQuestion(); } : null,
     onBlur: (field) => setTouched((current) => ({ ...current, [field]: true })),
     onChange: handleChange,
-    onComplete: () => handleComplete(number),
+    onComplete: () => handleComplete(currentStep),
     values,
-  });
+  };
+
+  const currentQuestion = currentStep === 1 ? <StepOne {...common} />
+    : currentStep === 2 ? <StepTwo {...common} />
+      : currentStep === 3 ? <StepThree {...common} />
+        : currentStep === 4 ? <StepFour {...common} />
+          : <StepFive {...common} />;
 
   return (
     <section className={styles.funnelSection} id="funnel-start" aria-labelledby="progressive-funnel-title">
@@ -398,25 +495,18 @@ export function ProgressiveFunnel() {
           <div className={styles.closedState}>
             <span className={styles.closedArrow} aria-hidden="true">↘</span>
             <h2 id="progressive-funnel-title">Воронка пока свёрнута</h2>
-            <p>Начни диагностику выше — и здесь появится только первый шаг.</p>
-            <button type="button" className={styles.nextButton} onClick={beginFunnel}>Начать с лидов <span>→</span></button>
+            <p>Начни диагностику выше — и здесь появится только первый вопрос.</p>
+            <button type="button" className={styles.nextButton} onClick={beginFunnel}>Начать разбор <span>→</span></button>
           </div>
         ) : (
           <>
-            <div className={styles.progressBar} aria-label={`Прогресс: ${completedSteps} из 5 шагов`}>
-              <span>ДИАГНОСТИКА</span><strong>{Math.min(completedSteps + 1, 5)}/5</strong><i><b style={{ width: `${(completedSteps / 5) * 100}%` }} /></i>
+            <div className={styles.progressBar} aria-label={"Прогресс: " + currentStep + " из 5 шагов"}>
+              <span>ДИАГНОСТИКА</span><strong>{currentStep}/5</strong><i><b style={{ width: (currentStep / 5) * 100 + "%" }} /></i>
             </div>
             <h2 className={styles.srOnly} id="progressive-funnel-title">Пошаговая диагностика воронки</h2>
-            <div className={styles.funnelGrid}>
-              <div className={styles.steps}>
-                {visibleSteps >= 1 ? <StepOne number={1} {...common(1)} /> : null}
-                {visibleSteps >= 2 ? <StepTwo number={2} {...common(2)} /> : null}
-                {visibleSteps >= 3 ? <StepThree number={3} {...common(3)} /> : null}
-                {visibleSteps >= 4 ? <StepFour number={4} {...common(4)} /> : null}
-                {visibleSteps >= 5 ? <StepFive number={5} {...common(5)} /> : null}
-                {completedSteps === 5 ? <div className={styles.completeMarker} id="funnel-complete"><strong>{isFunnelValid ? "Все 5 шагов заполнены" : "Исправь противоречие выше"}</strong><span>{isFunnelValid ? "Итоговая экономика появилась ниже." : "Расчёты и отправка снова откроются после исправления."}</span></div> : null}
-              </div>
-              <FunnelVisualization completedSteps={completedSteps} input={input} />
+            <div className={styles.funnelGrid} id="diagnostic-shell">
+              <div className={styles.steps}>{currentQuestion}</div>
+              <FunnelVisualization completedSteps={completedSteps} currentStep={currentStep} input={input} onEdit={editStep} />
             </div>
             {completedSteps === 5 && isFunnelValid ? <FunnelResults input={input} /> : null}
           </>

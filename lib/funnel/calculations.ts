@@ -1,35 +1,33 @@
 import type { FunnelCalculation, FunnelInput } from "@/types/funnel";
 
-function safeDivide(numerator: number, denominator: number): number | null {
+export function safeDivide(numerator: number, denominator: number): number | null {
   if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator <= 0) return null;
   const result = numerator / denominator;
   return Number.isFinite(result) ? result : null;
 }
 
 export function calculateFunnel(input: FunnelInput): FunnelCalculation {
-  const adSpend = input.leads * input.avgCpl;
-
+  const adSpend = input.leadsCount * input.costPerLead;
   return {
     adSpend,
-    contactRate: safeDivide(input.contacted, input.leads),
-    costPerContact: safeDivide(adSpend, input.contacted),
-    appointmentRate: safeDivide(input.appointments, input.contacted),
-    costPerAppointment: safeDivide(adSpend, input.appointments),
-    showRate: safeDivide(input.heldMeetings, input.appointments),
-    costPerHeldMeeting: safeDivide(adSpend, input.heldMeetings),
-    closeRate: safeDivide(input.contracts, input.heldMeetings),
-    leadToContractRate: safeDivide(input.contracts, input.leads),
-    costPerContract: safeDivide(adSpend, input.contracts),
-    leadsPerContract: safeDivide(input.leads, input.contracts),
+    contactRate: safeDivide(input.contactedCount, input.leadsCount),
+    costPerContact: safeDivide(adSpend, input.contactedCount),
+    bookingRate: safeDivide(input.meetingsBooked, input.contactedCount),
+    costPerBookedMeeting: safeDivide(adSpend, input.meetingsBooked),
+    showRate: safeDivide(input.meetingsHeld, input.meetingsBooked),
+    costPerHeldMeeting: safeDivide(adSpend, input.meetingsHeld),
+    closeRate: safeDivide(input.contractsCount, input.meetingsHeld),
+    costPerContract: safeDivide(adSpend, input.contractsCount),
+    leadsPerContract: safeDivide(input.leadsCount, input.contractsCount),
     losses: {
-      beforeContact: input.leads - input.contacted,
-      afterContact: input.contacted - input.appointments,
-      afterAppointment: input.appointments - input.heldMeetings,
-      afterMeeting: input.heldMeetings - input.contracts,
+      beforeContact: input.leadsCount - input.contactedCount,
+      afterContact: input.contactedCount - input.meetingsBooked,
+      afterBooking: input.meetingsBooked - input.meetingsHeld,
+      afterMeeting: input.meetingsHeld - input.contractsCount,
     },
   };
 }
 
-export function estimatedAcquisitionSpend(lostCount: number, avgCpl: number): number {
-  return Math.max(0, lostCount) * Math.max(0, avgCpl);
+export function estimatedAcquisitionSpend(count: number, costPerLead: number): number {
+  return Math.max(0, count) * Math.max(0, costPerLead);
 }

@@ -7,7 +7,7 @@ import type { FunnelInput } from "@/types/funnel";
 import { TelegramSubmitButton } from "./TelegramSubmitButton";
 import styles from "./finalCta.module.css";
 
-const storageKey = "small-company:funnel:v1";
+const storageKey = "small-company:funnel:v2";
 
 type FunnelStateDetail = { completedSteps: number; input: FunnelInput; isValid: boolean };
 
@@ -21,12 +21,12 @@ function inputFromStoredState(): FunnelStateDetail | null {
       completedSteps: parsed.completedSteps ?? 0,
       isValid: Boolean(parsed.isValid),
       input: {
-        leads: Number(parsed.values.leads) || 0,
-        avgCpl: Number(parsed.values.avgCpl) || 0,
-        contacted: Number(parsed.values.contacted) || 0,
-        appointments: Number(parsed.values.appointments) || 0,
-        heldMeetings: Number(parsed.values.heldMeetings) || 0,
-        contracts: Number(parsed.values.contracts) || 0,
+        leadsCount: Number(parsed.values.leadsCount) || 0,
+        costPerLead: Number(parsed.values.costPerLead) || 0,
+        contactedCount: Number(parsed.values.contactedCount) || 0,
+        meetingsBooked: Number(parsed.values.meetingsBooked) || 0,
+        meetingsHeld: Number(parsed.values.meetingsHeld) || 0,
+        contractsCount: Number(parsed.values.contractsCount) || 0,
       },
     };
   } catch {

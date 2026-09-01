@@ -14,7 +14,7 @@ export function SmallCompanyHero() {
           <span className={styles.number}>01</span>
           <span className={styles.eyebrow}>ТЫ ЧАСТНЫЙ ЮРИСТ ИЛИ У ТЕБЯ 1–2 ОФИСА</span>
         </div>
-        <h1 id="small-company-title">Скорее всего, дело не только в количестве лидов</h1>
+        <h1 id="small-company-title"><span className={styles.heroQualifier}>Скорее всего</span><span>дело не только в количестве лидов</span></h1>
         <p className={styles.heroLead}>Если ты уже запускал рекламу на БФЛ, то наверняка сталкивался хотя бы с одной из этих ситуаций:</p>
         <div className={styles.painGrid}>
           {smallCompanyPains.map((pain, index) => (
@@ -22,12 +22,11 @@ export function SmallCompanyHero() {
               <span className={styles.cardIndex}>0{index + 1}</span>
               <h2>{pain.title}</h2>
               <p>{pain.body}</p>
-              <strong>{pain.emphasis}</strong>
             </article>
           ))}
         </div>
         <div className={styles.heroConclusion}>
-          <p>Поэтому прежде чем предлагать тебе ещё рекламу, <strong>давай сначала проверим, нужна ли тебе она вообще.</strong></p>
+          <p><strong>Прежде чем покупать новые заявки и искать подрядчиков, давай проверим, сколько денег ты уже теряешь внутри текущей воронки.</strong></p>
           <FunnelStartLink className={styles.primaryButton} href="#funnel-intro">Разобрать мою воронку <span>→</span></FunnelStartLink>
         </div>
       </div>
@@ -38,24 +37,13 @@ export function SmallCompanyHero() {
 export function FunnelIntro() {
   return (
     <section className={styles.intro} id="funnel-intro" aria-labelledby="funnel-intro-title">
-      <div className={`${styles.frame} ${styles.introGrid}`}>
+      <div className={`${styles.frame} ${styles.introContent}`}>
         <div>
           <span className={styles.eyebrow}>ДИАГНОСТИКА ВОРОНКИ</span>
           <h2 id="funnel-intro-title">За 3 минуты посмотрим, где у тебя реально теряются деньги</h2>
           <p>Не нужен доступ к рекламному кабинету, CRM или отчётам.</p>
-          <p>Возьми показатели <strong>за один обычный полный месяц</strong> и последовательно введи всего несколько цифр.</p>
-        </div>
-        <div className={styles.pathCard}>
-          <p>Мы посмотрим путь:</p>
-          <strong>лид → дозвон → назначенная встреча → состоявшаяся встреча → договор.</strong>
-          <ul>
-            <li>сколько стоит каждый следующий этап;</li>
-            <li>где происходит самая большая потеря;</li>
-            <li>что сильнее всего влияет на стоимость договора;</li>
-            <li>есть ли смысл покупать больше лидов прямо сейчас.</li>
-          </ul>
-          <p className={styles.note}>Не знаешь точную цифру? Укажи примерно — для первичной диагностики хватит.</p>
-          <FunnelStartLink className={styles.primaryButton} href="#funnel-start">Начать с лидов <span>→</span></FunnelStartLink>
+          <p><strong>Возьми показатели за один обычный полный месяц и последовательно введи всего несколько цифр</strong></p>
+          <FunnelStartLink className={styles.primaryButton} href="#funnel-start">Начать разбор <span>→</span></FunnelStartLink>
         </div>
       </div>
     </section>

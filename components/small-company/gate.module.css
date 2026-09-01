@@ -1,35 +1,32 @@
-.gate { margin-top: 145px; padding: 70px; display: grid; grid-template-columns: 1fr .85fr; gap: 60px; border: 2px solid rgba(47,158,90,.25); border-radius: 38px 28px 42px 30px; background: rgba(255,253,248,.78); box-shadow: 0 20px 55px rgba(34,50,29,.07); }
+.gate { margin-top: 145px; padding: 70px; border: 2px solid rgba(47,158,90,.25); border-radius: 38px 28px 42px 30px; background: rgba(255,253,248,.78); box-shadow: 0 20px 55px rgba(34,50,29,.07); }
 .eyebrow { display: inline-block; padding: 10px 20px; border-radius: 20px; background: #e5f5eb; color: var(--accent); font-weight: 800; }
-.gate h2 { margin: 28px 0; font-size: clamp(38px, 3.6vw, 64px); line-height: 1.1; letter-spacing: -.04em; }
-.gateCopy > p { color: var(--muted); font-size: clamp(18px, 1.25vw, 23px); line-height: 1.65; }
-.gate h3 { margin: 38px 0 18px; font-size: 27px; }
-.gate ul { margin: 0; padding-left: 24px; font-size: clamp(17px, 1.1vw, 21px); line-height: 1.7; }
-.reportPreview { position: relative; min-height: 560px; padding: 36px; border: 2px solid rgba(47,158,90,.3); border-radius: 26px 20px 30px 22px; background: white; overflow: hidden; transform: rotate(.7deg); }
-.previewVisible { display: grid; gap: 22px; }
-.previewVisible span { color: var(--accent); font-weight: 900; letter-spacing: .08em; }
-.previewVisible strong { font-size: 30px; line-height: 1.25; }
-.previewVisible p { margin: 0; color: var(--muted); line-height: 1.6; }
-.previewBlurred { display: grid; gap: 18px; margin-top: 35px; filter: blur(8px); opacity: .7; }
-.previewBlurred div { height: 70px; border-radius: 14px; background: linear-gradient(90deg, rgba(47,158,90,.22), rgba(84,89,82,.12)); }
-.previewBlurred div:nth-child(2) { width: 82%; }
-.previewBlurred div:nth-child(3) { height: 105px; }
-.previewFade { position: absolute; inset: 52% 0 0; background: linear-gradient(transparent, rgba(255,255,255,.96) 75%); }
-.gateAction { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 40px; padding-top: 20px; border-top: 1px solid rgba(47,158,90,.2); }
-.telegramButton { min-height: 72px; padding: 18px 26px; display: flex; justify-content: space-between; align-items: center; border: 3px solid var(--accent); border-radius: 20px 17px 22px 18px; background: var(--accent); color: white; font-size: clamp(18px, 1.25vw, 23px); font-weight: 800; }
+.gate h2 { margin: 28px 0 45px; max-width: 1150px; font-size: clamp(38px, 3.6vw, 64px); line-height: 1.1; letter-spacing: -.04em; }
+.teaserGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.teaserGrid article { min-height: 190px; padding: 28px; display: grid; align-content: start; gap: 24px; border: 2px solid rgba(47,158,90,.24); border-radius: 24px 18px 27px 20px; background: white; overflow: hidden; }
+.teaserGrid article > span { color: var(--accent); font-weight: 900; }
+.teaserGrid article > strong { font-size: clamp(21px, 1.5vw, 28px); line-height: 1.35; }
+.lockedCard { position: relative; }
+.lockedCard > div { display: grid; gap: 13px; filter: blur(7px); opacity: .55; }
+.lockedCard i { display: block; height: 18px; border-radius: 10px; background: linear-gradient(90deg, rgba(47,158,90,.35), rgba(84,89,82,.17)); }
+.lockedCard i:nth-child(2) { width: 82%; }
+.lockedCard i:nth-child(3) { width: 62%; }
+.lockedCard::after { content: ""; position: absolute; inset: 55% 0 0; background: linear-gradient(transparent, rgba(255,255,255,.94)); pointer-events: none; }
+.gateAction { margin-top: 38px; padding-top: 35px; display: grid; grid-template-columns: 1fr .85fr; align-items: center; gap: 40px; border-top: 1px solid rgba(47,158,90,.2); }
+.telegramButton { min-height: 76px; width: 100%; padding: 18px 26px; display: flex; justify-content: space-between; align-items: center; border: 3px solid var(--accent); border-radius: 20px 17px 22px 18px; background: var(--accent); color: white; cursor: pointer; font-size: clamp(18px, 1.25vw, 23px); font-weight: 800; }
 .telegramButton:disabled { cursor: wait; opacity: .72; }
 .telegramButton span { font-size: 1.4em; }
-.gateAction > div > p { margin: 13px 0 0; color: #365f31; font-size: 14px; }
-.gateAction p { margin: 0; color: var(--muted); line-height: 1.6; }
+.gateAction > div > p { margin: 8px 0; color: var(--muted); line-height: 1.5; }
+.gateAction > div > p:first-child { color: var(--ink); }
+.gateAction > div:first-child > p { margin: 13px 0 0; color: #365f31; font-size: 14px; }
 
 @media (max-width: 900px) {
-  .gate { padding: 45px 30px; grid-template-columns: 1fr; }
-  .gateAction { grid-template-columns: 1fr; }
+  .gate { padding: 45px 30px; }
+  .teaserGrid, .gateAction { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 560px) {
-  .gate { margin-top: 90px; padding: 36px 18px; gap: 36px; }
+  .gate { margin-top: 90px; padding: 36px 18px; }
   .gate h2 { font-size: 34px; }
-  .reportPreview { min-height: 430px; padding: 25px 20px; }
-  .previewVisible strong { font-size: 24px; }
-  .telegramButton { min-height: 58px; padding: 14px 16px; font-size: 17px; }
+  .teaserGrid article { min-height: 160px; padding: 23px 19px; }
+  .telegramButton { min-height: 60px; padding: 14px 16px; font-size: 17px; }
 }

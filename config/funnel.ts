@@ -1,128 +1,173 @@
-export type MetricStatus = "bad" | "attention" | "good" | "excellent" | "unscored";
-export type FunnelMetric = "cpl" | "contactRate" | "appointmentRate" | "showRate" | "closeRate";
+import type { FunnelMetricKey, FunnelStatus, PrimaryBottleneck } from "@/types/funnel";
 
-export type LowerIsBetterThreshold = {
-  direction: "lower_is_better";
-  badFrom: number | null;
-  attentionFrom: number | null;
-  goodUntil: number | null;
-  excellentUntil: number | null;
-  target: number | null;
+export type BenchmarkBand = {
+  status: FunnelStatus;
+  min?: number;
+  max?: number;
+  minInclusive?: boolean;
+  maxInclusive?: boolean;
 };
 
-export type HigherIsBetterThreshold = {
-  direction: "higher_is_better";
-  badBelow: number | null;
-  attentionBelow: number | null;
-  goodFrom: number | null;
-  excellentFrom: number | null;
-  target: number | null;
+export type FunnelBenchmark = {
+  bands: readonly BenchmarkBand[];
+  nextTarget: Partial<Record<FunnelStatus, number>>;
 };
 
-export type FunnelThreshold = LowerIsBetterThreshold | HigherIsBetterThreshold;
-export type FunnelThresholdConfig = Record<FunnelMetric, FunnelThreshold>;
-
-export const funnelThresholds: FunnelThresholdConfig = {
-  cpl: {
-    direction: "lower_is_better",
-    badFrom: 3000,
-    attentionFrom: null,
-    goodUntil: null,
-    excellentUntil: null,
-    target: null,
+export const funnelBenchmarks: Record<FunnelMetricKey, FunnelBenchmark> = {
+  costPerLead: {
+    bands: [
+      { status: "strong", max: 800, maxInclusive: false },
+      { status: "good", min: 800, minInclusive: true, max: 1500, maxInclusive: false },
+      { status: "attention", min: 1500, minInclusive: true, max: 2500, maxInclusive: true },
+      { status: "poor", min: 2500, minInclusive: false },
+    ],
+    nextTarget: { good: 800, attention: 1500, poor: 2500 },
   },
   contactRate: {
-    direction: "higher_is_better",
-    badBelow: null,
-    attentionBelow: null,
-    goodFrom: null,
-    excellentFrom: null,
-    target: null,
+    bands: [
+      { status: "strong", min: .8, minInclusive: true },
+      { status: "good", min: .6, minInclusive: true, max: .8, maxInclusive: false },
+      { status: "attention", min: .4, minInclusive: true, max: .6, maxInclusive: false },
+      { status: "poor", max: .4, maxInclusive: false },
+    ],
+    nextTarget: { good: .8, attention: .6, poor: .4 },
   },
-  appointmentRate: {
-    direction: "higher_is_better",
-    badBelow: null,
-    attentionBelow: null,
-    goodFrom: null,
-    excellentFrom: null,
-    target: null,
+  bookingRate: {
+    bands: [
+      { status: "strong", min: .4, minInclusive: false },
+      { status: "good", min: .25, minInclusive: true, max: .4, maxInclusive: true },
+      { status: "attention", min: .15, minInclusive: true, max: .25, maxInclusive: false },
+      { status: "poor", max: .15, maxInclusive: false },
+    ],
+    nextTarget: { good: .401, attention: .25, poor: .15 },
   },
   showRate: {
-    direction: "higher_is_better",
-    badBelow: null,
-    attentionBelow: null,
-    goodFrom: null,
-    excellentFrom: null,
-    target: null,
+    bands: [
+      { status: "strong", min: .6, minInclusive: false },
+      { status: "good", min: .4, minInclusive: true, max: .6, maxInclusive: true },
+      { status: "attention", min: .25, minInclusive: true, max: .4, maxInclusive: false },
+      { status: "poor", max: .25, maxInclusive: false },
+    ],
+    nextTarget: { good: .601, attention: .4, poor: .25 },
   },
   closeRate: {
-    direction: "higher_is_better",
-    badBelow: null,
-    attentionBelow: null,
-    goodFrom: null,
-    excellentFrom: null,
-    target: null,
+    bands: [
+      { status: "strong", min: .6, minInclusive: false },
+      { status: "good", min: .4, minInclusive: true, max: .6, maxInclusive: true },
+      { status: "attention", min: .25, minInclusive: true, max: .4, maxInclusive: false },
+      { status: "poor", max: .25, maxInclusive: false },
+    ],
+    nextTarget: { good: .601, attention: .4, poor: .25 },
   },
 };
 
-export const funnelAdviceContent: Record<FunnelMetric, { title: string; items: string[]; footer: string }> = {
-  cpl: {
-    title: "Лид уже дорогой — рекламу точно стоит проверить",
-    items: [
-      "Какие аудитории сейчас приводят заявки",
-      "Соответствует ли оффер реальной мотивации клиента",
-      "Не выгорела ли посадочная / связка",
-      "Тестируются ли разные посадочные и офферы",
-      "Какие креативы и объявления формируют ожидание перед заявкой",
-      "Как разбиты GEO",
-      "На какие действия фактически оптимизируется реклама",
-      "Есть ли обратная связь из дальнейшей воронки",
-    ],
-    footer: "Но прежде чем снижать CPL любой ценой, давай посмотрим, что эти лиды делают дальше.",
+export const benchmarkLabels: Record<FunnelMetricKey, Record<FunnelStatus, string>> = {
+  costPerLead: { strong: "Сильный результат", good: "Хороший результат", attention: "Есть что докрутить", poor: "Дорого" },
+  contactRate: { strong: "Сильный результат", good: "Хороший результат", attention: "В пределах, но есть что докрутить", poor: "Плохо" },
+  bookingRate: { strong: "Сильный результат", good: "Хороший результат", attention: "Есть что докрутить", poor: "Плохо" },
+  showRate: { strong: "Сильный результат", good: "Хороший результат", attention: "Есть что докрутить", poor: "Плохо" },
+  closeRate: { strong: "Сильный результат", good: "Хороший результат", attention: "В целом приемлемо", poor: "Плохо" },
+};
+
+type BenchmarkReaction = { title: string; body?: string; advice?: readonly string[]; insight?: string };
+
+const costAdvice = [
+  "Проверить, насколько оффер попадает в ситуацию клиента.",
+  "Проверить посадочную и соответствие обещания в рекламе содержанию страницы.",
+  "Не гнаться за более дешёвой заявкой, если текущая дальше конвертируется сильно.",
+] as const;
+
+const contactAdvice = [
+  "Проверь номер: не находится ли он в спам-базах/определителях.",
+  "Проверь регион: номер должен выглядеть релевантно человеку из нужного GEO.",
+  "Скорость первого звонка: ориентир — позвонить в течение 3–5 минут после заявки.",
+] as const;
+
+const bookingAdvice = [
+  "Проверь релевантность скрипта офферу. Менеджер должен продолжать тот разговор, который начался в рекламе и на посадочной.",
+  "Менеджер должен понимать, с какого оффера/страницы пришёл человек, а не разговаривать со всеми одинаково.",
+  "Проверь, какая цель первого звонка и насколько понятно человеку, зачем ему нужна встреча.",
+  "Посмотри, как отрабатываются «подумаю» / «сейчас неудобно» / «позвоните позже» и есть ли следующий конкретный шаг.",
+] as const;
+
+const showAdvice = [
+  "Сократить время между назначением и встречей, если оно слишком большое.",
+  "Делать подтверждение сразу после назначения с понятными временем, местом и форматом.",
+  "Напоминать о встрече заранее и отдельным касанием в день встречи.",
+  "Коротко напоминать, зачем человеку эта встреча и что он на ней получит, а не отправлять только техническое «ждём вас в 15:00».",
+  "Для переноса или неявки нужен понятный сценарий переназначения и возврата человека в коммуникацию.",
+] as const;
+
+const closeAdvice = [
+  "Как проходит консультация и насколько человек понимает ценность решения.",
+  "Оффер и условия на встрече.",
+  "Работа с сомнениями.",
+  "Что происходит после «мне нужно подумать».",
+  "Есть ли follow-up после встречи.",
+] as const;
+
+export const benchmarkReactions: Record<FunnelMetricKey, Record<FunnelStatus, BenchmarkReaction>> = {
+  costPerLead: {
+    strong: { title: "Стоимость заявки выглядит сильно.", body: "Но пока это только вход в воронку — смотрим, во что эти заявки превращаются дальше." },
+    good: { title: "По стоимости заявки всё выглядит хорошо.", body: "Вывод о рекламе всё равно делаем только после дальнейшей конверсии." },
+    attention: { title: "Здесь есть что докрутить.", body: "Я бы посмотрел оффер и посадочную, но сначала проверим качество этих заявок дальше по воронке.", advice: costAdvice },
+    poor: { title: "Заявка обходится дорого. Но выводы делать рано.", body: "Если дальше она хорошо превращается во встречи и договоры, такая стоимость может быть нормальной для твоей экономики.", advice: costAdvice },
   },
   contactRate: {
-    title: "Часть рекламного бюджета теряется ещё до разговора",
-    items: [
-      "Номер другого региона. Совпадает ли номер, с которого звонит компания, с GEO потенциального клиента?",
-      "Спам / определитель номера. Не определяется ли номер как спам, банк, коллектор или нежелательный звонок?",
-      "Скорость первого звонка. Если первый контакт идёт через 20–30 минут, человек уже может получить несколько звонков от других компаний.",
-      "Повторные попытки. Есть ли конкретный регламент: сколько раз звонить, когда повторять попытку и отправлять ли сообщение?",
-      "Не путать недозвон с плохим лидом: человек может быть на работе, за рулём или на встрече.",
-    ],
-    footer: "Прежде чем поставить статус «лид говно», стоит убедиться, что компания действительно сделала всё, чтобы с ним связаться.",
+    strong: { title: "С дозвоном всё очень хорошо.", body: "Здесь явной потери не видно — идём дальше." },
+    good: { title: "Хороший дозвон.", body: "Основной резерв, скорее всего, находится уже после первого разговора." },
+    attention: { title: "Дозвон в пределах нормы, но здесь есть запас.", body: "Даже несколько дополнительных состоявшихся разговоров могут заметно изменить экономику следующих этапов.", advice: contactAdvice },
+    poor: { title: "Здесь уже есть заметная просадка.", body: "Значительная часть заявок не доходит даже до первого разговора.", advice: [...contactAdvice, "Проверь регламент повторных попыток дозвона."] },
   },
-  appointmentRate: {
-    title: "Люди отвечают, но плохо переходят в следующий шаг",
-    items: [
-      "Соответствует ли первое сообщение менеджера тому офферу, который человек видел в рекламе?",
-      "Понимает ли менеджер, откуда пришёл человек и что именно ему обещали на посадочной?",
-      "Понятна ли цель первого разговора: консультация, квалификация или конкретный следующий шаг?",
-      "Понимает ли человек, зачем ему идти на встречу и какую ценность он там получит?",
-      "Если человек сказал «позже», есть ли понятный follow-up?",
-    ],
-    footer: "В такой ситуации снижение CPL может дать меньше денег, чем улучшение первого разговора с уже оплаченным лидом.",
+  bookingRate: {
+    strong: { title: "Сильная конверсия в назначенную встречу.", body: "Первый разговор хорошо переводит человека в следующий шаг." },
+    good: { title: "Хороший результат.", body: "Смотрим, сколько назначенных встреч действительно состоятся." },
+    attention: { title: "Здесь есть что докрутить.", body: "Люди отвечают на звонок, но заметная часть не переходит к встрече.", advice: bookingAdvice, insight: "Если реклама обещала одно, а менеджер начинает разговор с другого — хороший лид легко превращается в «плохой»." },
+    poor: { title: "Похоже, одно из слабых мест находится в первом разговоре.", body: "До человека дозвонились, но дальше воронка резко сужается.", advice: bookingAdvice, insight: "Если реклама обещала одно, а менеджер начинает разговор с другого — хороший лид легко превращается в «плохой»." },
   },
   showRate: {
-    title: "Встреча назначена — но клиент до юриста не доходит",
-    items: [
-      "Сколько времени проходит между первым звонком и встречей",
-      "Получает ли человек напоминание и сообщение сразу после назначения",
-      "Есть ли короткий прогрев и подтверждение ценности встречи",
-      "Что происходит, если клиент просит перенести встречу",
-      "Как обрабатывается неявка и есть ли повторный контакт",
-    ],
-    footer: "Заявка уже несколько раз подорожала. Покупать сверху ещё больше лидов в такой ситуации может просто увеличить объём потерь.",
+    strong: { title: "Сильная доходимость.", body: "Люди не просто соглашаются на встречу — они действительно приходят." },
+    good: { title: "Хороший результат.", body: "Смотрим последний этап — сколько встреч превращаются в договор." },
+    attention: { title: "Здесь есть запас.", body: "Человек уже согласился на встречу, но часть ценности теряется между назначением и самой встречей.", advice: showAdvice },
+    poor: { title: "Здесь воронка теряет много уже назначенных встреч.", body: "Покупать сверху больше заявок до исправления этого этапа может просто увеличить потери.", advice: showAdvice },
   },
   closeRate: {
-    title: "Здесь узкое место уже находится не в рекламном кабинете",
-    items: [
-      "Как проходит сама консультация",
-      "Какой оффер получает человек на встрече",
-      "Какие причины отказов реально фиксируются",
-      "Есть ли повторная работа после встречи",
-      "Насколько квалифицированные лиды доходят до консультации",
-      "Отличается ли конверсия между менеджерами и юристами",
-    ],
-    footer: "Поэтому на вопрос «сколько стоит договор с ваших лидов?» нельзя нормально ответить, не зная, сколько лидов именно ваша компания превращает в один договор.",
+    strong: { title: "Сильная конверсия встречи в договор." },
+    good: { title: "Хороший результат на финальном этапе." },
+    attention: { title: "В целом приемлемо, но есть пространство для роста.", advice: closeAdvice },
+    poor: { title: "Здесь уже стоит смотреть не рекламный кабинет, а саму консультацию и дальнейшую работу с человеком.", advice: closeAdvice },
   },
 };
+
+export const bottleneckContent: Record<Exclude<PrimaryBottleneck, "none">, { title: string; body: string; recommendation: string }> = {
+  cost_per_lead: {
+    title: "Первым делом я бы посмотрел входящий трафик и оффер",
+    body: "Стоимость заявки сейчас сильнее всего давит на итоговую экономику. Но если дальше заявки конвертируются сильно, не нужно снижать цену любой ценой.",
+    recommendation: "Проверь оффер и посадочную: совпадает ли обещание в рекламе с тем, что человек видит после клика.",
+  },
+  contact_rate: {
+    title: "Главный резерв сейчас — дозвон",
+    body: "Часть заявок не доходит даже до первого разговора. До покупки дополнительного трафика я бы сначала проверил телефонию и скорость обработки.",
+    recommendation: "Начни с номера и скорости звонка: проверь спам-метки, соответствие региону и первый контакт в течение 3–5 минут.",
+  },
+  booking_rate: {
+    title: "Главный резерв — перевод разговора во встречу",
+    body: "До человека дозваниваются, но дальше воронка заметно сужается.",
+    recommendation: "Проверь, продолжает ли скрипт менеджера тот оффер, на который человек оставил заявку, и понимает ли клиент ценность встречи.",
+  },
+  show_rate: {
+    title: "Главный резерв — доходимость до встречи",
+    body: "Люди уже согласились на встречу, но часть из них теряется до её начала.",
+    recommendation: "Проверь подтверждение, напоминания, срок до встречи и сценарий переназначения для тех, кто не пришёл.",
+  },
+  close_rate: {
+    title: "Главный резерв находится уже после состоявшейся встречи",
+    body: "До этого этапа маркетинг уже довёл человека до консультации. Здесь в первую очередь стоит смотреть саму встречу, предложение и дальнейший follow-up.",
+    recommendation: "Разбери, что происходит после «мне нужно подумать» и как человек возвращается в диалог после встречи.",
+  },
+};
+
+export const allGoodContent = {
+  title: "Явного провала внутри воронки не видно",
+  body: "По введённым цифрам основные этапы работают хорошо. В такой ситуации я бы уже смотрел на масштабирование трафика, новые аудитории, офферы и GEO, а не пытался бесконечно «чинить» рабочую воронку.",
+} as const;

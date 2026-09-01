@@ -10,13 +10,15 @@
 .progressBar i { height: 8px; border-radius: 99px; background: rgba(47,158,90,.12); overflow: hidden; }
 .progressBar b { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width .35s ease; }
 .funnelGrid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(360px, .65fr); align-items: start; gap: clamp(35px, 6vw, 90px); }
-.steps { display: grid; gap: 34px; }
-.step { padding: 44px; border: 2px solid rgba(47,158,90,.25); border-radius: 30px 21px 34px 24px; background: rgba(255,253,248,.9); box-shadow: 0 18px 44px rgba(34,50,29,.06); animation: reveal .38s ease both; }
+.steps { display: grid; }
+.step { min-height: 620px; padding: 44px; border: 2px solid rgba(47,158,90,.25); border-radius: 30px 21px 34px 24px; background: rgba(255,253,248,.9); box-shadow: 0 18px 44px rgba(34,50,29,.06); animation: reveal .38s ease both; }
 .step.completed { border-color: rgba(47,158,90,.58); }
 @keyframes reveal { from { opacity: 0; transform: translateY(24px) scale(.99); } to { opacity: 1; transform: none; } }
 .stepHeader { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 22px; color: var(--accent); font-weight: 800; }
 .stepHeader strong { padding: 7px 12px; border-radius: 14px; background: #e5f5eb; font-size: 14px; }
+.stepHeader button { min-height: 42px; padding: 7px 12px; border: 1px solid rgba(47,158,90,.35); border-radius: 14px; background: transparent; color: var(--accent); cursor: pointer; font-weight: 800; }
 .step h3 { margin: 0 0 34px; font-size: clamp(31px, 2.65vw, 48px); line-height: 1.13; letter-spacing: -.035em; }
+.stepHelp { margin: -18px 0 28px; color: var(--muted); font-size: 17px; line-height: 1.55; }
 .fieldGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .field { display: grid; gap: 10px; color: #31372f; font-size: 18px; font-weight: 700; }
 .inputShell { min-height: 72px; display: flex; align-items: center; gap: 12px; padding: 0 22px; border: 2px solid rgba(47,158,90,.36); border-radius: 19px 15px 21px 17px; background: white; transition: border-color .2s ease, box-shadow .2s ease; }
@@ -29,12 +31,15 @@
 .liveResult > strong { font-size: 1.2em; }
 .liveResult p { margin: 8px 0 0; }
 .handNote { color: #365f31; font: 700 18px/1.4 var(--font-note); transform: rotate(-.5deg); }
-.unscored { margin: 18px 0 0; padding: 14px 18px; border: 1px dashed rgba(84,89,82,.35); border-radius: 14px; color: var(--muted); font-size: 15px; line-height: 1.5; }
-.insight { margin-top: 20px; padding: 24px 26px; border: 2px solid rgba(200,70,56,.35); border-radius: 20px 16px 23px 18px; background: rgba(200,70,56,.055); }
-.insight summary { cursor: pointer; color: #9d3429; font-size: clamp(20px, 1.4vw, 26px); font-weight: 800; }
-.insight ul { margin: 22px 0; padding-left: 24px; line-height: 1.65; }
-.insight li + li { margin-top: 8px; }
-.insight > strong { display: block; line-height: 1.55; }
+.reaction { display: grid; gap: 10px; margin-top: 20px; padding: 24px 26px; border: 2px solid rgba(47,158,90,.24); border-radius: 20px 16px 23px 18px; background: rgba(255,253,248,.72); }
+.reaction > strong { font-size: clamp(20px, 1.4vw, 26px); }
+.reaction p { margin: 0; line-height: 1.55; }
+.reaction ul { margin: 10px 0 0; padding-left: 24px; line-height: 1.55; }
+.reaction li + li { margin-top: 7px; }
+.statusBadge { justify-self: start; padding: 7px 12px; border-radius: 14px 11px 16px 12px; color: #234829; background: #e5f5eb; font-size: 14px; font-weight: 900; }
+.statusBadge[data-status="attention"] { color: #7a5415; background: #fff0c8; }
+.statusBadge[data-status="poor"] { color: #8b3028; background: #fbe2de; }
+.importantCopy { margin: 22px 0 0; padding: 18px 22px; border-left: 4px solid var(--accent); background: rgba(47,158,90,.06); font-weight: 700; line-height: 1.55; }
 .nextButton { width: 100%; min-height: 66px; margin-top: 30px; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; border: 3px solid var(--accent); border-radius: 20px 17px 22px 18px; background: transparent; color: var(--accent); cursor: pointer; font-size: clamp(18px, 1.25vw, 23px); font-weight: 800; transition: background .2s ease, color .2s ease, transform .2s ease; }
 .nextButton:hover { background: var(--accent); color: white; transform: translateY(-2px); }
 .nextButton span { font-size: 1.4em; }
@@ -44,7 +49,9 @@
 .funnelOutline path { fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
 .funnelOutline path:first-child { stroke-width: 4; }
 .visualStages { position: relative; z-index: 2; display: grid; justify-items: center; gap: 20px; margin-top: 45px; }
-.visualStage { min-height: 74px; padding: 12px 18px; display: grid; grid-template-columns: 1fr auto; align-items: center; border: 2px solid rgba(47,158,90,.45); border-radius: 19px 14px 22px 16px; background: rgba(251,248,239,.94); animation: draw .4s ease both; }
+.visualStage { min-height: 74px; padding: 12px 18px; display: grid; grid-template-columns: 1fr auto; align-items: center; border: 2px solid rgba(47,158,90,.45); border-radius: 19px 14px 22px 16px; background: rgba(251,248,239,.94); color: var(--ink); cursor: pointer; text-align: left; animation: draw .4s ease both; transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
+.visualStage:hover, .visualStage:focus-visible { border-color: var(--accent); box-shadow: 0 7px 20px rgba(34,50,29,.09); transform: translateY(-2px); }
+.visualStageActive { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(47,158,90,.11); }
 @keyframes draw { from { opacity: 0; clip-path: inset(0 100% 0 0); } to { opacity: 1; clip-path: inset(0); } }
 .visualStage span { color: var(--muted); font-size: 14px; }
 .visualStage strong { color: var(--accent); font-size: 26px; }
@@ -66,7 +73,7 @@
   .closedState { padding: 38px 22px; }
   .progressBar { top: 6px; grid-template-columns: auto auto; gap: 10px; }
   .progressBar i { grid-column: 1 / -1; }
-  .step { padding: 30px 21px; }
+  .step { min-height: auto; padding: 30px 21px; }
   .step h3 { font-size: 29px; }
   .fieldGrid { grid-template-columns: 1fr; }
   .inputShell { min-height: 64px; }

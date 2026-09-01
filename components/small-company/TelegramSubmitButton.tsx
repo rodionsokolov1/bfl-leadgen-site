@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 
 import { getAttribution } from "@/lib/attribution";
 import { trackEvent } from "@/lib/analytics/events";
-import { assessmentTrackingFromAttribution, buildFunnelAssessmentPayload } from "@/lib/funnel/assessment";
+import { assessmentAttributionFromContext, buildFunnelAssessmentPayload } from "@/lib/funnel/assessment";
 import { submitFunnelAssessment } from "@/lib/funnel/submitAssessment";
 import type { FunnelInput } from "@/types/funnel";
 
@@ -26,11 +26,11 @@ export function TelegramSubmitButton({ children, className, disabled = false, in
     if (!input || state === "submitting") return;
     setState("submitting");
     setMessage("");
-    trackEvent("SMALL_TELEGRAM_ANALYSIS_CLICK", { segment: "small_company", source });
+    trackEvent("FUNNEL_TELEGRAM_CTA_CLICKED", { segment: "small_company", source });
     try {
-      const payload = buildFunnelAssessmentPayload(input, assessmentTrackingFromAttribution(getAttribution()));
+      const payload = buildFunnelAssessmentPayload(input, assessmentAttributionFromContext(getAttribution()));
       const result = await submitFunnelAssessment(payload);
-      trackEvent("SMALL_TELEGRAM_ASSESSMENT_SENT", { segment: "small_company", source, mocked: result.mocked });
+      trackEvent("FUNNEL_ASSESSMENT_SAVED", { segment: "small_company", source, mocked: result.mocked });
       setState("success");
       if (result.telegramUrl) {
         setMessage(result.mocked ? "Dev mock сохранён. Открываю Telegram…" : "Воронка сохранена. Открываю Telegram…");

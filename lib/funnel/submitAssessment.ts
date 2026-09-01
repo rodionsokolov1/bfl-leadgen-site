@@ -36,11 +36,11 @@ async function submitToEndpoint(payload: FunnelAssessmentPayload): Promise<Submi
 }
 
 function submitToDevMock(payload: FunnelAssessmentPayload): SubmitAssessmentResult {
-  const token = payload.assessmentId.replaceAll("-", "").slice(0, 16);
+  const token = globalThis.crypto.randomUUID().replaceAll("-", "").slice(0, 16);
   try {
     window.sessionStorage.setItem(`small-company:mock-assessment:${token}`, JSON.stringify(payload));
   } catch {
-    // The in-memory flow and generated token remain usable when storage is blocked.
+    // The generated token remains usable when storage is blocked.
   }
   return { token, telegramUrl: telegramUrl(token), mocked: true };
 }

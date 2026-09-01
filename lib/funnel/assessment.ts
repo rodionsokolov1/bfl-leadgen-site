@@ -1,12 +1,12 @@
-import { funnelThresholds } from "@/config/funnel";
 import type { AttributionContext } from "@/lib/attribution/attribution";
-import { calculateFunnel } from "./calculations";
-import { diagnoseMetric } from "./diagnostics";
-import type { FunnelAssessmentPayload, FunnelAssessmentTracking, FunnelInput } from "@/types/funnel";
+import type { FunnelAssessmentAttribution, FunnelAssessmentPayload, FunnelInput } from "@/types/funnel";
+import { calculateFunnel } from "./calculations.ts";
+import { findPrimaryBottleneck, getFunnelStatuses, primaryRecommendation } from "./diagnostics.ts";
 
-export function assessmentTrackingFromAttribution(context: AttributionContext): FunnelAssessmentTracking {
+export function assessmentAttributionFromContext(context: AttributionContext): FunnelAssessmentAttribution {
   const data = { ...context.firstTouch, ...context.current };
   return {
+    trackingId: data.tracking_id,
     utmSource: data.utm_source,
     utmMedium: data.utm_medium,
     utmCampaign: data.utm_campaign,
@@ -14,47 +14,41 @@ export function assessmentTrackingFromAttribution(context: AttributionContext): 
     utmTerm: data.utm_term,
     yclid: data.yclid,
     metrikaClientId: data.ym_client_id,
-    landingVariant: data.landing_version,
+    landingPath: typeof window === "undefined" ? undefined : window.location.pathname,
   };
-}
-
-export function createAssessmentId(): string {
-  return globalThis.crypto.randomUUID();
 }
 
 export function buildFunnelAssessmentPayload(
   input: FunnelInput,
-  tracking: FunnelAssessmentTracking,
-  assessmentId = createAssessmentId(),
+  attribution: FunnelAssessmentAttribution,
   createdAt = new Date().toISOString(),
 ): FunnelAssessmentPayload {
   const calculation = calculateFunnel(input);
-  const calculated = {
+  const metrics = {
     adSpend: calculation.adSpend,
     contactRate: calculation.contactRate,
     costPerContact: calculation.costPerContact,
-    appointmentRate: calculation.appointmentRate,
-    costPerAppointment: calculation.costPerAppointment,
+    bookingRate: calculation.bookingRate,
+    costPerBookedMeeting: calculation.costPerBookedMeeting,
     showRate: calculation.showRate,
     costPerHeldMeeting: calculation.costPerHeldMeeting,
     closeRate: calculation.closeRate,
-    leadToContractRate: calculation.leadToContractRate,
     costPerContract: calculation.costPerContract,
     leadsPerContract: calculation.leadsPerContract,
   };
+  const statuses = getFunnelStatuses(input, metrics);
+  const primaryBottleneck = findPrimaryBottleneck(input, metrics, statuses);
   return {
-    assessmentId,
+    version: "small-company-v1",
     createdAt,
-    segment: "small_company",
+    period: { type: "last_full_month" },
     input,
-    calculated,
-    statuses: {
-      cpl: diagnoseMetric(input.avgCpl, funnelThresholds.cpl),
-      contactRate: diagnoseMetric(calculated.contactRate, funnelThresholds.contactRate),
-      appointmentRate: diagnoseMetric(calculated.appointmentRate, funnelThresholds.appointmentRate),
-      showRate: diagnoseMetric(calculated.showRate, funnelThresholds.showRate),
-      closeRate: diagnoseMetric(calculated.closeRate, funnelThresholds.closeRate),
+    metrics,
+    statuses,
+    diagnosis: {
+      primaryBottleneck,
+      primaryVisibleRecommendation: primaryRecommendation(primaryBottleneck),
     },
-    tracking,
+    attribution,
   };
 }

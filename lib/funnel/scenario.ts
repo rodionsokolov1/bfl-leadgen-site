@@ -1,9 +1,10 @@
 import type { FunnelInput } from "@/types/funnel";
+import { safeDivide } from "./calculations.ts";
 
 export interface FunnelScenario {
-  avgCpl: number;
+  costPerLead: number;
   contactRate: number;
-  appointmentRate: number;
+  bookingRate: number;
   showRate: number;
   closeRate: number;
 }
@@ -12,8 +13,8 @@ export interface ScenarioResult {
   adSpend: number;
   leads: number;
   contacted: number;
-  appointments: number;
-  heldMeetings: number;
+  booked: number;
+  held: number;
   contracts: number;
   costPerContract: number | null;
 }
@@ -23,37 +24,22 @@ function clampRate(value: number): number {
   return Math.min(1, Math.max(0, value));
 }
 
-function safeDivide(numerator: number, denominator: number): number | null {
-  if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator <= 0) return null;
-  const result = numerator / denominator;
-  return Number.isFinite(result) ? result : null;
-}
-
 export function scenarioFromInput(input: FunnelInput): FunnelScenario {
   return {
-    avgCpl: input.avgCpl,
-    contactRate: safeDivide(input.contacted, input.leads) ?? 0,
-    appointmentRate: safeDivide(input.appointments, input.contacted) ?? 0,
-    showRate: safeDivide(input.heldMeetings, input.appointments) ?? 0,
-    closeRate: safeDivide(input.contracts, input.heldMeetings) ?? 0,
+    costPerLead: input.costPerLead,
+    contactRate: safeDivide(input.contactedCount, input.leadsCount) ?? 0,
+    bookingRate: safeDivide(input.meetingsBooked, input.contactedCount) ?? 0,
+    showRate: safeDivide(input.meetingsHeld, input.meetingsBooked) ?? 0,
+    closeRate: safeDivide(input.contractsCount, input.meetingsHeld) ?? 0,
   };
 }
 
 export function calculateScenario(base: FunnelInput, scenario: FunnelScenario): ScenarioResult {
-  const adSpend = base.leads * base.avgCpl;
-  const leads = scenario.avgCpl > 0 ? adSpend / scenario.avgCpl : 0;
+  const adSpend = base.leadsCount * base.costPerLead;
+  const leads = scenario.costPerLead > 0 ? adSpend / scenario.costPerLead : 0;
   const contacted = leads * clampRate(scenario.contactRate);
-  const appointments = contacted * clampRate(scenario.appointmentRate);
-  const heldMeetings = appointments * clampRate(scenario.showRate);
-  const contracts = heldMeetings * clampRate(scenario.closeRate);
-
-  return {
-    adSpend,
-    leads,
-    contacted,
-    appointments,
-    heldMeetings,
-    contracts,
-    costPerContract: safeDivide(adSpend, contracts),
-  };
+  const booked = contacted * clampRate(scenario.bookingRate);
+  const held = booked * clampRate(scenario.showRate);
+  const contracts = held * clampRate(scenario.closeRate);
+  return { adSpend, leads, contacted, booked, held, contracts, costPerContract: safeDivide(adSpend, contracts) };
 }

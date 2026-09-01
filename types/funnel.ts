@@ -1,35 +1,55 @@
+export type FunnelStatus = "strong" | "good" | "attention" | "poor";
+
+export type FunnelMetricKey =
+  | "costPerLead"
+  | "contactRate"
+  | "bookingRate"
+  | "showRate"
+  | "closeRate";
+
+export type PrimaryBottleneck =
+  | "cost_per_lead"
+  | "contact_rate"
+  | "booking_rate"
+  | "show_rate"
+  | "close_rate"
+  | "none";
+
 export interface FunnelInput {
-  leads: number;
-  avgCpl: number;
-  contacted: number;
-  appointments: number;
-  heldMeetings: number;
-  contracts: number;
+  leadsCount: number;
+  costPerLead: number;
+  contactedCount: number;
+  meetingsBooked: number;
+  meetingsHeld: number;
+  contractsCount: number;
 }
 
-export interface FunnelCalculation {
+export interface FunnelMetrics {
   adSpend: number;
   contactRate: number | null;
   costPerContact: number | null;
-  appointmentRate: number | null;
-  costPerAppointment: number | null;
+  bookingRate: number | null;
+  costPerBookedMeeting: number | null;
   showRate: number | null;
   costPerHeldMeeting: number | null;
   closeRate: number | null;
-  leadToContractRate: number | null;
   costPerContract: number | null;
   leadsPerContract: number | null;
+}
+
+export interface FunnelCalculation extends FunnelMetrics {
   losses: {
     beforeContact: number;
     afterContact: number;
-    afterAppointment: number;
+    afterBooking: number;
     afterMeeting: number;
   };
 }
 
 export type FunnelField = keyof FunnelInput;
 
-export interface FunnelAssessmentTracking {
+export interface FunnelAssessmentAttribution {
+  trackingId?: string;
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
@@ -37,21 +57,19 @@ export interface FunnelAssessmentTracking {
   utmTerm?: string;
   yclid?: string;
   metrikaClientId?: string;
-  landingVariant?: string;
+  landingPath?: string;
 }
 
 export interface FunnelAssessmentPayload {
-  assessmentId: string;
+  version: "small-company-v1";
   createdAt: string;
-  segment: "small_company";
+  period: { type: "last_full_month" };
   input: FunnelInput;
-  calculated: Omit<FunnelCalculation, "losses">;
-  statuses: {
-    cpl: import("@/config/funnel").MetricStatus;
-    contactRate: import("@/config/funnel").MetricStatus;
-    appointmentRate: import("@/config/funnel").MetricStatus;
-    showRate: import("@/config/funnel").MetricStatus;
-    closeRate: import("@/config/funnel").MetricStatus;
+  metrics: FunnelMetrics;
+  statuses: Record<FunnelMetricKey, FunnelStatus | null> & { costPerLead: FunnelStatus };
+  diagnosis: {
+    primaryBottleneck: PrimaryBottleneck;
+    primaryVisibleRecommendation: string;
   };
-  tracking: FunnelAssessmentTracking;
+  attribution: FunnelAssessmentAttribution;
 }

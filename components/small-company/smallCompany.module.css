@@ -7,8 +7,10 @@
 .branchMark { display: flex; align-items: center; gap: 30px; margin-bottom: 34px; }
 .number { color: var(--accent); font: 400 clamp(84px, 8vw, 145px)/.75 var(--font-note); letter-spacing: -.08em; transform: rotate(-3deg); }
 .eyebrow { display: inline-block; padding: 11px 24px; border-radius: 24px 18px 22px 20px; background: #e5f5eb; color: var(--accent); font-size: clamp(15px, 1.2vw, 22px); font-weight: 800; }
+.branchMark .eyebrow { padding: 14px 28px; font-size: clamp(19px, 1.55vw, 28px); }
 .hero h1, .intro h2, .trust h2, .video h2 { margin: 0; letter-spacing: -.045em; line-height: 1.08; }
-.hero h1 { max-width: 1180px; font-size: clamp(50px, 5.2vw, 90px); }
+.hero h1 { max-width: 1180px; display: grid; gap: 5px; font-size: clamp(42px, 4.15vw, 72px); }
+.heroQualifier { color: var(--muted); font-size: .62em; font-weight: 700; letter-spacing: -.025em; }
 .heroLead { max-width: 1050px; margin: 45px 0 54px; color: var(--muted); font-size: clamp(22px, 1.75vw, 31px); line-height: 1.55; }
 .painGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
 .painCard { position: relative; min-height: 330px; padding: 38px 36px; border: 2px solid color-mix(in srgb, var(--accent) 28%, transparent); border-radius: 30px 21px 34px 24px; background: rgba(255,253,248,.78); box-shadow: 0 16px 42px rgba(34,50,29,.06); }
@@ -17,6 +19,7 @@
 .cardIndex { position: absolute; right: 24px; top: 20px; color: color-mix(in srgb, var(--accent) 48%, transparent); font: 700 32px/1 var(--font-note); }
 .painCard h2 { margin: 0 0 30px; padding-right: 48px; font-size: clamp(26px, 2vw, 36px); }
 .painCard p, .painCard strong { display: block; margin: 0; font-size: clamp(18px, 1.25vw, 23px); line-height: 1.55; }
+.painCard p { white-space: pre-line; }
 .painCard strong { margin-top: 22px; }
 .heroConclusion { display: grid; grid-template-columns: 1.05fr .95fr; align-items: center; gap: 60px; margin-top: 60px; padding: 40px 46px; border-left: 5px solid var(--accent); background: linear-gradient(90deg, rgba(47,158,90,.08), transparent); }
 .heroConclusion p { margin: 0; font-size: clamp(22px, 1.65vw, 30px); line-height: 1.6; }
@@ -24,6 +27,9 @@
 .primaryButton span { font-size: 1.5em; line-height: .8; }
 .primaryButton:hover { background: var(--accent); color: white; transform: translateY(-3px); }
 .intro { padding: 130px 0; background: linear-gradient(180deg, rgba(47,158,90,.055), transparent 75%); }
+.introContent { max-width: 1120px; text-align: center; }
+.introContent > div { display: grid; justify-items: center; }
+.introContent .primaryButton { width: min(100%, 520px); margin-top: 32px; }
 .introGrid { display: grid; grid-template-columns: .92fr 1.08fr; align-items: center; gap: clamp(40px, 7vw, 120px); }
 .intro h2, .trust h2, .video h2 { margin-top: 28px; font-size: clamp(40px, 4vw, 70px); }
 .introGrid > div:first-child > p { font-size: clamp(21px, 1.45vw, 28px); line-height: 1.7; }
@@ -73,7 +79,8 @@
   .branchMark { align-items: flex-start; gap: 13px; }
   .number { font-size: 64px; }
   .eyebrow { padding: 8px 12px; font-size: 13px; }
-  .hero h1 { font-size: 38px; }
+  .branchMark .eyebrow { padding: 10px 13px; font-size: 15px; }
+  .hero h1 { font-size: 36px; }
   .heroLead { margin-block: 30px 36px; font-size: 19px; }
   .painGrid { gap: 16px; }
   .painCard { padding: 28px 24px; }
