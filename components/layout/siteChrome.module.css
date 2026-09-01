@@ -1,0 +1,56 @@
+.header {
+  min-height: 140px;
+  padding: 26px 34px;
+  display: grid;
+  grid-template-columns: 1.1fr .8fr 1.15fr;
+  align-items: center;
+  gap: 30px;
+  border: 2px solid color-mix(in srgb, var(--header-accent) 62%, transparent);
+  border-radius: 30px;
+  background: rgba(255, 253, 248, .76);
+  box-shadow: 0 14px 42px rgba(46, 54, 31, .06);
+  backdrop-filter: blur(8px);
+}
+
+.identity { display: flex; align-items: center; gap: 26px; }
+.brandLogo { display: block; flex: 0 0 auto; width: 90px; height: 90px; object-fit: contain; }
+.identityText { display: grid; gap: 2px; }
+.identityText strong { font-size: clamp(24px, 1.7vw, 34px); line-height: 1.2; }
+.identityText small { color: var(--muted); font-size: clamp(17px, 1.1vw, 23px); }
+.experience {
+  margin: 0;
+  padding-inline: 36px;
+  border-inline: 2px solid color-mix(in srgb, var(--header-accent) 42%, transparent);
+  color: #363a35;
+  font-size: clamp(18px, 1.18vw, 24px);
+}
+.socials { display: flex; justify-content: flex-end; gap: clamp(18px, 2.2vw, 42px); }
+.social { display: inline-flex; align-items: center; gap: 11px; font-size: clamp(16px, 1.1vw, 23px); white-space: nowrap; }
+.socialIcon { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; color: white; transition: transform .2s ease; }
+.socialIcon svg { width: 25px; height: 25px; fill: currentColor; }
+.social:hover .socialIcon { transform: translateY(-3px) rotate(-4deg); }
+.telegram .socialIcon { background: #42aee8; }
+.vk .socialIcon { background: #1479c9; }
+.whatsapp .socialIcon { background: #51b968; }
+
+@media (max-width: 1250px) {
+  .header { grid-template-columns: 1fr auto; }
+  .experience { display: none; }
+  .socials { gap: 15px; }
+  .social { font-size: 0; gap: 0; }
+  .socialIcon { width: 43px; height: 43px; }
+}
+
+@media (max-width: 900px) {
+  .header { min-height: 100px; padding: 15px 18px; border-radius: 22px; }
+  .identity { gap: 14px; }
+  .brandLogo { width: 64px; height: 64px; }
+  .identityText strong { font-size: 20px; }
+  .identityText small { font-size: 14px; }
+}
+
+@media (max-width: 560px) {
+  .header { grid-template-columns: 1fr auto; }
+  .identityText small { max-width: 150px; }
+  .socials .vk, .socials .whatsapp { display: none; }
+}

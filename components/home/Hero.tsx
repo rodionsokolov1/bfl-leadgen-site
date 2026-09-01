@@ -1,37 +1,15 @@
 import Image from "next/image";
 
-import { SocialIcon } from "./SocialIcon";
-import styles from "./home.module.css";
+import { Header } from "@/components/layout/Header";
 
-const socials = [
-  { name: "telegram" as const, label: "Telegram" },
-  { name: "vk" as const, label: "ВКонтакте" },
-  { name: "whatsapp" as const, label: "WhatsApp" },
-];
+import styles from "./home.module.css";
 
 export function Hero() {
   return (
     <section className={`${styles.section} ${styles.hero}`} aria-labelledby="hero-title">
       <div className={styles.pageDots} aria-hidden="true" />
       <div className={styles.frame}>
-        <header className={styles.header}>
-          <a className={styles.identity} href="#top" aria-label="Родион Соколов — на начало страницы">
-            <Image className={styles.brandLogo} src="/images/home/brand-logo.svg" alt="Логотип Родион Соколов" width={90} height={90} />
-            <span className={styles.identityText}>
-              <strong>Родион Соколов</strong>
-              <small>Маркетинг для БФЛ</small>
-            </span>
-          </a>
-          <p className={styles.experience}>Привлекаю клиентов<br />для юристов с 2019 года</p>
-          <nav className={styles.socials} aria-label="Социальные сети">
-            {socials.map((social) => (
-              <a className={`${styles.social} ${styles[social.name]}`} href="#contacts" key={social.name}>
-                <span className={styles.socialIcon}><SocialIcon name={social.name} /></span>
-                <span>{social.label}</span>
-              </a>
-            ))}
-          </nav>
-        </header>
+        <Header />
 
         <div className={styles.heroGrid} id="top">
           <div className={styles.heroCopy}>
