@@ -70,15 +70,18 @@ export function ConversionResult({ input, metrics, statuses }: { input: FunnelIn
       <div className={styles.telegram}>
         <div className={styles.telegramContent}>
           <span className={styles.telegramLabel}>А ТЕПЕРЬ — ПОЛНЫЙ РАЗБОР</span>
-          <h4>Отправь свою воронку в Telegram в 2 шага — и сразу получи полный разбор</h4>
+          <h4>Забери полный разбор твоей воронки в Telegram в 2 шага</h4>
           <div className={styles.telegramSteps}>
             <div><span>01</span><strong>Нажми кнопку и открой Telegram</strong></div>
             <i aria-hidden="true">→</i>
             <div><span>02</span><strong>Получи готовый разбор своей воронки</strong></div>
             <small>заново ничего вводить не нужно</small>
           </div>
-          <p className={styles.benefitsTitle}>Что будет внутри:</p>
-          <ul>{model.teaser.map((item) => <li key={item}>{item}</li>)}</ul>
+          <ul>
+            <li>он уже полностью готов</li>
+            <li>все данные отправятся автоматически</li>
+            <li>ничего повторно заполнять не нужно</li>
+          </ul>
         </div>
         <div className={styles.telegramAction}>
           <TelegramSubmitButton className={styles.telegramButton} input={input} source="gate">
@@ -86,7 +89,6 @@ export function ConversionResult({ input, metrics, statuses }: { input: FunnelIn
             <span className={styles.buttonLabel}>{model.ctaLabel}</span>
             <span className={styles.buttonArrow}>→</span>
           </TelegramSubmitButton>
-          <small>Все данные отправятся автоматически. Ничего повторно заполнять не нужно — персональный результат придёт сразу.</small>
         </div>
         <div className={styles.telegramIllustration} aria-label={`Пример готового разбора: ${model.telegramReserve}`}>
           <Image src="/images/small-company/telegram-result-sketch-v2.png" alt="" fill sizes="(max-width: 900px) 100vw, 34vw" />

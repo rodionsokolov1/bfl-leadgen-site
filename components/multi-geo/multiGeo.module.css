@@ -7,6 +7,31 @@
   color: var(--ink);
 }
 
+.hero h1,
+.sectionHeader h2,
+.videoIntro h2,
+.videoHeading h2,
+.problemCopy h3,
+.finalCard h2 {
+  text-wrap: balance;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+
+.heroLead,
+.heroBody,
+.problemCopy > div,
+.videoIntroCopy,
+.videoHeading > p,
+.evidence .sectionHeader > p,
+.finalCopy {
+  text-wrap: pretty;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+
 .frame {
   width: min(calc(100% - (var(--page-gutter) * 2)), var(--container));
   margin-inline: auto;
@@ -36,7 +61,7 @@
 .heroGrid {
   min-height: 710px;
   display: grid;
-  grid-template-columns: minmax(0, 1.02fr) minmax(520px, .98fr);
+  grid-template-columns: minmax(0, 1.16fr) minmax(480px, .84fr);
   align-items: center;
   gap: clamp(34px, 4vw, 82px);
 }
@@ -58,14 +83,15 @@
   letter-spacing: .035em;
 }
 .hero h1 {
-  max-width: 1040px;
+  max-width: 1050px;
   margin: 0;
-  font-size: clamp(43px, 3.75vw, 68px);
+  font-size: clamp(42px, 3.45vw, 62px);
   line-height: 1.08;
   letter-spacing: -.047em;
 }
 .heroLead {
   position: relative;
+  max-width: 27ch;
   width: fit-content;
   margin: 38px 0 40px;
   color: var(--graphite);
@@ -84,7 +110,7 @@
   border-radius: 50%;
   transform: rotate(-.8deg);
 }
-.heroBody { display: grid; gap: 18px; color: var(--muted); font-size: clamp(19px, 1.35vw, 25px); line-height: 1.65; }
+.heroBody { max-width: 55ch; display: grid; gap: 18px; color: var(--muted); font-size: clamp(19px, 1.35vw, 25px); line-height: 1.65; }
 .heroBody p { margin: 0; }
 .heroVisual {
   position: relative;
@@ -113,6 +139,7 @@
   top: 3%;
   right: 2%;
   margin: 0;
+  max-width: 18ch;
   color: var(--accent-dark);
   font: 700 clamp(17px, 1.25vw, 23px)/1.45 var(--font-note);
   transform: rotate(4deg);
@@ -166,7 +193,7 @@
 .problemRow {
   min-height: 560px;
   display: grid;
-  grid-template-columns: 100px minmax(380px, .9fr) minmax(420px, 1.1fr);
+  grid-template-columns: 82px minmax(420px, .92fr) minmax(500px, 1.08fr);
   align-items: center;
   gap: clamp(32px, 5vw, 90px);
   padding: 74px 28px;
@@ -181,56 +208,25 @@
   font: 400 42px/1 var(--font-note);
   transform: rotate(-4deg);
 }
-.problemCopy h3 { margin: 0 0 36px; font-size: clamp(31px, 2.5vw, 46px); line-height: 1.16; letter-spacing: -.035em; }
-.problemCopy > div { display: grid; gap: 21px; color: #3e474d; font-size: clamp(19px, 1.3vw, 24px); line-height: 1.62; }
+.problemCopy h3 { max-width: 22ch; margin: 0 0 36px; font-size: clamp(31px, 2.35vw, 45px); line-height: 1.16; letter-spacing: -.035em; }
+.problemCopy > div { max-width: 56ch; display: grid; gap: 21px; color: #3e474d; font-size: clamp(19px, 1.3vw, 24px); line-height: 1.62; }
 .problemCopy p { margin: 0; }
 .problemArt { min-width: 0; }
 .problemVisual {
   position: relative;
-  min-height: 360px;
-  border: 2px solid rgba(50,135,200,.2);
-  border-radius: 42% 58% 47% 53% / 52% 43% 57% 48%;
-  background: repeating-linear-gradient(-14deg, rgba(50,135,200,.055) 0 2px, transparent 2px 12px), rgba(255,253,248,.62);
+  min-height: 410px;
+  isolation: isolate;
 }
-.geoVisual::before {
+.problemVisual::before {
   content: "";
   position: absolute;
-  left: 13%;
-  right: 13%;
-  top: 49%;
-  height: 2px;
-  border-top: 3px dashed rgba(50,135,200,.44);
-  transform: rotate(-5deg);
+  inset: 8% 4% 5%;
+  z-index: -1;
+  border-radius: 47% 53% 44% 56% / 55% 43% 57% 45%;
+  background: repeating-linear-gradient(-15deg, rgba(50,135,200,.045) 0 2px, transparent 2px 13px), rgba(255,253,248,.44);
+  transform: rotate(-1deg);
 }
-.geoVisual > span { position: absolute; display: block; width: 28px; height: 28px; border: 6px solid var(--accent); border-radius: 50%; background: var(--paper-light); }
-.geoVisual > span::after { content: ""; position: absolute; left: 5px; top: 18px; width: 8px; height: 22px; border-left: 5px solid var(--accent); transform: rotate(29deg); }
-.geoVisual > span:nth-child(1) { left: 16%; top: 49%; }
-.geoVisual > span:nth-child(2) { left: 48%; top: 27%; }
-.geoVisual > span:nth-child(3) { right: 15%; top: 55%; }
-.geoVisual i { position: absolute; left: -24px; bottom: -75px; width: 78px; height: 48px; border: 2px solid var(--graphite); border-radius: 7px 7px 2px 2px; background: repeating-linear-gradient(-25deg, rgba(38,49,58,.1) 0 2px, transparent 2px 8px); }
-.geoVisual i::before, .geoVisual i::after { content: ""; position: absolute; bottom: 0; width: 2px; height: 31px; background: var(--graphite); }
-.geoVisual i::before { left: 25px; }.geoVisual i::after { right: 25px; }
-.economyVisual { display: flex; align-items: flex-end; justify-content: center; gap: 40px; padding: 60px 55px 88px; }
-.economyVisual::before, .economyVisual::after { content: ""; position: absolute; left: 13%; bottom: 66px; background: var(--graphite); }
-.economyVisual::before { width: 74%; height: 2px; }.economyVisual::after { width: 2px; height: 62%; }
-.economyVisual > span { position: relative; z-index: 1; width: 20%; border: 3px solid var(--accent-dark); border-bottom: 0; background: repeating-linear-gradient(-20deg, rgba(50,135,200,.22) 0 3px, transparent 3px 9px); }
-.economyVisual > span:nth-child(1) { height: 62%; }.economyVisual > span:nth-child(2) { height: 43%; }.economyVisual > span:nth-child(3) { height: 21%; }
-.economyVisual em {
-  position: absolute;
-  top: 23px;
-  right: 8px;
-  color: var(--accent-dark);
-  font: normal 17px/1.4 var(--font-note);
-  transform: rotate(4deg);
-}
-.chainVisual { min-height: auto; padding: 54px 38px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 15px 10px; }
-.chainVisual span { padding: 11px 15px; border: 2px solid rgba(50,135,200,.45); border-radius: 15px 11px 17px 12px; background: rgba(255,253,248,.78); color: var(--graphite); font-weight: 700; }
-.chainVisual i { color: var(--accent); font: normal 25px/1 Arial; }
-.scaleVisual { min-height: 330px; padding: 52px; display: grid; align-content: center; gap: 42px; }
-.scaleVisual > div { display: grid; grid-template-columns: 100px 1fr; align-items: center; gap: 18px; font-size: 18px; font-weight: 700; }
-.scaleVisual > div > i { display: block; height: 22px; border: 2px solid var(--accent-dark); background: repeating-linear-gradient(-20deg, rgba(50,135,200,.22) 0 3px, transparent 3px 9px); }
-.scaleVisual > div:first-child > i { width: 100%; }.scaleVisual > div:nth-child(2) > i { width: 42%; }
-.scaleVisual em { justify-self: end; color: var(--accent-dark); font: normal 19px/1.3 var(--font-note); transform: rotate(-4deg); }
+.problemVisual img { object-fit: contain; filter: saturate(.82); }
 .bigConclusion {
   position: relative;
   margin: 130px 0 0;
@@ -339,18 +335,18 @@
 .finalCard {
   position: relative;
   min-height: 620px;
-  padding: clamp(52px, 6vw, 100px);
+  padding: clamp(52px, 4vw, 72px);
   display: grid;
-  grid-template-columns: 1fr .72fr;
+  grid-template-columns: minmax(0, 1.25fr) minmax(480px, .75fr);
   align-items: center;
-  gap: clamp(55px, 7vw, 120px);
+  gap: clamp(55px, 4vw, 72px);
   border: 3px solid var(--accent);
   border-radius: 38px 27px 43px 30px;
   background: rgba(255,253,248,.78);
   box-shadow: 0 22px 70px rgba(35,75,104,.09);
 }
 .finalCard::before { content: ""; position: absolute; inset: 28px; z-index: -1; border: 1px solid rgba(50,135,200,.12); border-radius: 28px 20px 32px 22px; }
-.finalCard h2 { margin-top: 24px; }
+.finalCard h2 { max-width: 100%; margin-top: 24px; font-size: clamp(40px, 3.25vw, 58px); }
 .finalCopy { display: grid; gap: 26px; color: #3c464c; font-size: clamp(19px, 1.3vw, 24px); line-height: 1.58; }
 .finalCopy p { margin: 0; }
 .finalCopy a {
@@ -365,6 +361,7 @@
   color: var(--accent-dark);
   font-size: clamp(18px, 1.3vw, 24px);
   font-weight: 800;
+  white-space: nowrap;
   transition: transform .2s ease, color .2s ease, background .2s ease;
 }
 .finalCopy a:hover { background: var(--accent); color: white; transform: translateY(-3px); }
@@ -380,11 +377,21 @@
   .systemStep { flex-basis: 25%; }
 }
 
+@media (max-width: 1100px) {
+  .problemRow, .problemRow:nth-child(even) {
+    min-height: auto;
+    grid-template-columns: 58px 1fr;
+    gap: 24px;
+  }
+  .problemRow:nth-child(even) .problemCopy, .problemCopy { grid-column: 2; grid-row: 1; }
+  .problemRow:nth-child(even) .problemArt, .problemArt { grid-column: 1 / -1; grid-row: 2; margin-top: 22px; }
+  .problemVisual { min-height: 390px; }
+}
+
 @media (max-width: 900px) {
   .top { padding-top: 18px; }
   .hero { padding: 72px 0 100px; }
   .heroGrid { min-height: auto; grid-template-columns: 1fr; }
-  .hero h1 br, .heroLead br, .heroBody br, .problemCopy br, .videoIntroCopy br, .videoHeading h2 br, .finalCopy br { display: none; }
   .heroVisual { min-height: 590px; margin: 30px calc(var(--page-gutter) * -1) 0; }
   .heroVisual small { right: calc(var(--page-gutter) + 10px); }
   .heroNote { right: var(--page-gutter); }
@@ -399,8 +406,7 @@
   }
   .problemRow:nth-child(even) .problemCopy, .problemCopy { grid-column: 2; grid-row: 1; }
   .problemRow:nth-child(even) .problemArt, .problemArt { grid-column: 1 / -1; grid-row: 2; margin-top: 20px; }
-  .problemVisual { min-height: 330px; }
-  .chainVisual { min-height: auto; }
+  .problemVisual { min-height: 360px; }
   .bigConclusion { margin-top: 90px; padding: 48px 38px 55px; }
   .videoIntro { padding-block: 110px 95px; }
   .videoSection, .system, .evidence, .trust { padding-block: 100px; }
@@ -436,14 +442,7 @@
   .problemIndex { font-size: 29px; }
   .problemCopy h3 { margin-bottom: 27px; font-size: 27px; }
   .problemCopy > div { gap: 17px; font-size: 17px; line-height: 1.55; }
-  .problemVisual { min-height: 250px; border-radius: 29px 19px 32px 21px; }
-  .economyVisual { gap: 17px; padding: 45px 35px 65px; }
-  .economyVisual em { top: 17px; max-width: 155px; font-size: 13px; }
-  .chainVisual { padding: 35px 20px; gap: 11px 6px; }
-  .chainVisual span { padding: 9px 11px; font-size: 13px; }
-  .chainVisual i { font-size: 19px; }
-  .scaleVisual { padding: 32px 23px; gap: 32px; }
-  .scaleVisual > div { grid-template-columns: 72px 1fr; gap: 12px; font-size: 14px; }
+  .problemVisual { min-height: 270px; }
   .bigConclusion { margin-top: 70px; padding: 40px 24px 46px; }
   .bigConclusion::before { left: 26px; }
   .bigConclusion span, .bigConclusion strong { font-size: 32px; }
@@ -485,6 +484,6 @@
   .finalCard { min-height: auto; padding: 45px 25px; gap: 42px; border-radius: 28px 20px 32px 22px; }
   .finalCard::before { inset: 12px; }
   .finalCopy { gap: 22px; font-size: 17px; }
-  .finalCopy a { min-height: 64px; padding: 16px 17px; font-size: 16px; }
+  .finalCopy a { min-height: 64px; padding: 16px 17px; font-size: 16px; white-space: normal; }
   .finalArrow { display: none; }
 }
