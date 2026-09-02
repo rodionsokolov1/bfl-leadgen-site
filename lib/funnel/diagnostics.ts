@@ -1,11 +1,13 @@
 import { bottleneckContent, funnelBenchmarks } from "../../config/funnel.ts";
 import type {
   FunnelEconomicMetricKey,
+  FunnelBottleneckImpact,
   FunnelInput,
   FunnelLocalMetricKey,
   FunnelMetricKey,
   FunnelMetrics,
   FunnelStatus,
+  OverallDiagnosisType,
   PrimaryBottleneck,
 } from "@/types/funnel";
 import { requiredConversion } from "./calculations.ts";
@@ -22,6 +24,13 @@ export type DynamicConversionTarget = {
 export type FunnelConclusion = {
   kind: "healthy" | "economy_mismatch" | "economy_attention" | "local_bottleneck";
   title: string;
+};
+
+export type BottleneckAnalysis = {
+  primaryBottleneck: PrimaryBottleneck;
+  primaryBottleneckImpact: number | null;
+  secondaryBottlenecks: FunnelBottleneckImpact[];
+  multipleBottlenecks: boolean;
 };
 
 const bottleneckNames: Record<FunnelLocalMetricKey, Exclude<PrimaryBottleneck, "none">> = {
@@ -92,7 +101,7 @@ function nextCandidateTarget(
   return targets.length > 0 ? Math.min(...targets) : null;
 }
 
-export function findPrimaryBottleneck(input: FunnelInput, metrics: FunnelMetrics, statuses = getFunnelStatuses(input, metrics)): PrimaryBottleneck {
+export function analyzeBottlenecks(input: FunnelInput, metrics: FunnelMetrics, statuses = getFunnelStatuses(input, metrics)): BottleneckAnalysis {
   const localValues: Record<FunnelLocalMetricKey, number | null> = {
     costPerLead: input.costPerLead,
     contactRate: metrics.contactRate,
@@ -111,12 +120,13 @@ export function findPrimaryBottleneck(input: FunnelInput, metrics: FunnelMetrics
     if (metric === "costPerLead") return localIssue && overallEconomicIssue;
     return localIssue || economicIssue || (overallEconomicIssue && localStatus !== "strong");
   });
-  if (candidates.length === 0) return "none";
+  if (candidates.length === 0) {
+    return { primaryBottleneck: "none", primaryBottleneckImpact: null, secondaryBottlenecks: [], multipleBottlenecks: false };
+  }
 
   const factual = scenarioFromInput(input);
   const current = calculateScenario(input, factual);
-  let bestMetric: FunnelLocalMetricKey | null = null;
-  let bestEffect = 0;
+  const impacts: FunnelBottleneckImpact[] = [];
 
   for (const metric of candidates) {
     const currentValue = localValues[metric];
@@ -136,13 +146,51 @@ export function findPrimaryBottleneck(input: FunnelInput, metrics: FunnelMetrics
     const effect = current.costPerContract !== null && modeled.costPerContract !== null
       ? Math.max(0, current.costPerContract - modeled.costPerContract)
       : Math.max(0, modeled.contracts - current.contracts);
-    if (effect > bestEffect) {
-      bestEffect = effect;
-      bestMetric = metric;
+    if (effect > 0) {
+      impacts.push({
+        bottleneck: bottleneckNames[metric],
+        metric,
+        impact: effect,
+        status,
+      });
     }
   }
 
-  return bestMetric ? bottleneckNames[bestMetric] : "none";
+  impacts.sort((left, right) => right.impact - left.impact);
+  const primary = impacts[0];
+  if (!primary) {
+    return { primaryBottleneck: "none", primaryBottleneckImpact: null, secondaryBottlenecks: [], multipleBottlenecks: false };
+  }
+  const closeImpacts = impacts.slice(1).filter((candidate) => candidate.impact >= primary.impact * .75);
+  return {
+    primaryBottleneck: primary.bottleneck,
+    primaryBottleneckImpact: primary.impact,
+    secondaryBottlenecks: closeImpacts,
+    multipleBottlenecks: closeImpacts.length > 0,
+  };
+}
+
+export function findPrimaryBottleneck(input: FunnelInput, metrics: FunnelMetrics, statuses = getFunnelStatuses(input, metrics)): PrimaryBottleneck {
+  return analyzeBottlenecks(input, metrics, statuses).primaryBottleneck;
+}
+
+export function getOverallDiagnosisType(
+  metrics: FunnelMetrics,
+  statuses: FunnelStatuses,
+  analysis: BottleneckAnalysis,
+): OverallDiagnosisType {
+  const cost = metrics.costPerContract;
+  const conversionStatuses = [statuses.contactRate, statuses.bookingRate, statuses.showRate, statuses.closeRate];
+  const hasCriticalStage = conversionStatuses.some((status) => status === "poor");
+  const conversionsHealthy = conversionStatuses.every((status) => status === "strong" || status === "good");
+
+  if (analysis.multipleBottlenecks || (statuses.costPerContract === "poor" && conversionsHealthy && analysis.primaryBottleneck === "none")) {
+    return "MULTIPLE_BOTTLENECKS";
+  }
+  if (cost !== null && cost <= 25000 && !hasCriticalStage) return "EXCELLENT";
+  if (cost !== null && cost <= 40000 && !hasCriticalStage) return "GOOD";
+  if (cost !== null && cost > 50000) return "EXPENSIVE";
+  return "NEEDS_IMPROVEMENT";
 }
 
 export function getDynamicConversionTargets(primary: PrimaryBottleneck, metrics: FunnelMetrics, statuses: FunnelStatuses): DynamicConversionTarget[] {

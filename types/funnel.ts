@@ -22,6 +22,27 @@ export type PrimaryBottleneck =
   | "close_rate"
   | "none";
 
+export type OverallDiagnosisType =
+  | "EXCELLENT"
+  | "GOOD"
+  | "NEEDS_IMPROVEMENT"
+  | "EXPENSIVE"
+  | "MULTIPLE_BOTTLENECKS";
+
+export interface FunnelBottleneckImpact {
+  bottleneck: Exclude<PrimaryBottleneck, "none">;
+  metric: FunnelLocalMetricKey;
+  impact: number;
+  status: FunnelStatus;
+}
+
+export interface FunnelRequiredConversion {
+  bottleneck: Extract<PrimaryBottleneck, "booking_rate" | "show_rate" | "close_rate">;
+  targetCost: number;
+  requiredRate: number | null;
+  achievable: boolean;
+}
+
 export interface FunnelInput {
   leadsCount: number;
   costPerLead: number;
@@ -76,6 +97,11 @@ export interface FunnelAssessmentPayload {
   statuses: Record<FunnelMetricKey, FunnelStatus | null> & { costPerLead: FunnelStatus };
   diagnosis: {
     primaryBottleneck: PrimaryBottleneck;
+    primaryBottleneckImpact: number | null;
+    secondaryBottlenecks: FunnelBottleneckImpact[];
+    multipleBottlenecks: boolean;
+    requiredConversions: FunnelRequiredConversion[];
+    overallDiagnosisType: OverallDiagnosisType;
     primaryVisibleRecommendation: string;
   };
   attribution: FunnelAssessmentAttribution;

@@ -27,6 +27,12 @@ export const analyticsEventNames = [
   "FUNNEL_WHAT_IF_USED",
   "FUNNEL_TELEGRAM_CTA_CLICKED",
   "FUNNEL_ASSESSMENT_SAVED",
+  "FUNNEL_RESULT_VIEWED",
+  "FUNNEL_TELEGRAM_CTA_CLICK",
+  "SEGMENT_MULTI_GEO_OPEN",
+  "MULTI_GEO_VIDEO_PLAY",
+  "MULTI_GEO_SYSTEM_VIEW",
+  "MULTI_GEO_FINAL_CTA",
 ] as const;
 
 export type AnalyticsEventName = (typeof analyticsEventNames)[number];

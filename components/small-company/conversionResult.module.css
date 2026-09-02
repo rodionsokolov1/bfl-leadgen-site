@@ -1,0 +1,404 @@
+.result {
+  position: relative;
+  margin-top: 55px;
+  overflow: hidden;
+  border: 3px solid var(--accent);
+  border-radius: 31px 23px 35px 25px;
+  background: rgba(255, 253, 248, .88);
+  box-shadow: 0 18px 48px rgba(34, 50, 29, .07);
+}
+
+.result::before {
+  content: "";
+  position: absolute;
+  inset: 16px;
+  z-index: 0;
+  pointer-events: none;
+  border: 1px solid rgba(47, 158, 90, .12);
+  border-radius: 22px 17px 26px 18px;
+}
+
+.resultMain {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(280px, .85fr);
+  align-items: center;
+  gap: clamp(35px, 5vw, 78px);
+  padding: clamp(38px, 4.2vw, 68px);
+}
+
+.copy { min-width: 0; }
+
+.eyebrow, .telegramLabel {
+  display: inline-block;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: .09em;
+}
+
+.copy h3 {
+  max-width: 880px;
+  margin: 19px 0 18px;
+  font-size: clamp(34px, 3.15vw, 54px);
+  line-height: 1.08;
+  letter-spacing: -.043em;
+}
+
+.summary {
+  max-width: 790px;
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(18px, 1.2vw, 22px);
+  line-height: 1.55;
+}
+
+.focus {
+  position: relative;
+  max-width: 850px;
+  margin-top: 32px;
+  padding: 25px 27px 26px;
+  border-left: 5px solid var(--accent);
+  background: rgba(47, 158, 90, .065);
+}
+
+.focus > span {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.focus h4 {
+  margin: 11px 0 10px;
+  font-size: clamp(23px, 1.7vw, 30px);
+  line-height: 1.2;
+}
+
+.focus p {
+  margin: 0;
+  font-size: clamp(16px, 1.08vw, 19px);
+  line-height: 1.52;
+}
+
+.focus small {
+  display: block;
+  margin-top: 12px;
+  color: #365f31;
+  font-weight: 800;
+}
+
+.disclaimer {
+  display: block;
+  max-width: 780px;
+  margin-top: 20px;
+  color: #747a73;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.sketch {
+  position: relative;
+  min-height: 285px;
+  display: grid;
+  place-content: center;
+  gap: 25px;
+  padding: 30px 22px;
+  border: 2px solid rgba(47, 158, 90, .22);
+  border-radius: 48% 52% 44% 56% / 55% 42% 58% 45%;
+  background:
+    repeating-linear-gradient(-17deg, rgba(47, 158, 90, .07) 0 2px, transparent 2px 12px),
+    rgba(255, 253, 248, .7);
+  transform: rotate(-1deg);
+}
+
+.sketch::before, .sketch::after {
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 9px;
+  border-top: 3px solid var(--accent);
+  border-radius: 50%;
+}
+
+.sketch::before { top: 18%; left: 8%; transform: rotate(35deg); }
+.sketch::after { right: 8%; bottom: 23%; transform: rotate(-28deg); }
+
+.sketch > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.sketch > div > span {
+  min-width: 42px;
+  padding: 9px 11px;
+  border: 2px solid rgba(47, 158, 90, .35);
+  border-radius: 13px 10px 15px 11px;
+  background: rgba(255, 253, 248, .82);
+  color: #263c2c;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.sketch > div > span:nth-child(even) {
+  min-width: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font: 700 24px/1 var(--font-note);
+}
+
+.sketch p {
+  margin: 0;
+  color: #365f31;
+  font: 700 16px/1.45 var(--font-note);
+  text-align: center;
+  transform: rotate(-2deg);
+}
+
+.sketch[data-visual="multiple"] > div > span:nth-child(2),
+.sketch[data-visual="multiple"] > div > span:nth-child(4) {
+  color: #c18a25;
+}
+
+.telegram {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(330px, .82fr);
+  grid-template-rows: auto auto;
+  align-items: start;
+  gap: 24px clamp(35px, 5vw, 75px);
+  padding: clamp(34px, 3.8vw, 58px) clamp(38px, 4.2vw, 68px);
+  border-top: 2px dashed rgba(47, 158, 90, .36);
+  background: rgba(47, 158, 90, .055);
+}
+
+.telegram::before {
+  content: "↘";
+  position: absolute;
+  top: -37px;
+  left: 50%;
+  color: var(--accent);
+  font: 700 52px/1 var(--font-note);
+  transform: translateX(-50%) rotate(6deg);
+}
+
+.telegramContent {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  align-self: center;
+}
+
+.telegram h4 {
+  max-width: 720px;
+  margin: 13px 0 15px;
+  font-size: clamp(28px, 2.4vw, 42px);
+  line-height: 1.14;
+  letter-spacing: -.035em;
+}
+
+.telegramContent > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+}
+
+.telegramSteps {
+  position: relative;
+  max-width: 760px;
+  margin: 28px 0 30px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 14px;
+}
+
+.telegramSteps > div {
+  min-height: 92px;
+  padding: 17px 18px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 13px;
+  border: 2px solid rgba(47, 158, 90, .25);
+  border-radius: 19px 14px 22px 16px;
+  background: rgba(255, 253, 248, .76);
+}
+
+.telegramSteps > div > span {
+  color: var(--accent);
+  font: 700 25px/1 var(--font-note);
+  transform: rotate(-4deg);
+}
+
+.telegramSteps > div > strong {
+  font-size: clamp(15px, 1vw, 18px);
+  line-height: 1.35;
+}
+
+.telegramSteps > i {
+  color: var(--accent);
+  font: normal 27px/1 Arial;
+}
+
+.telegramSteps > small {
+  position: absolute;
+  right: 4%;
+  bottom: -25px;
+  color: #365f31;
+  font: 700 13px/1.3 var(--font-note);
+  transform: rotate(-2deg);
+}
+
+.benefitsTitle { font-weight: 800; }
+
+.telegram ul {
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  list-style: none;
+}
+
+.telegram li {
+  position: relative;
+  padding-left: 25px;
+  font-size: clamp(15px, 1vw, 18px);
+}
+
+.telegram li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: 900;
+}
+
+.telegramAction {
+  min-width: 0;
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.telegramButton {
+  width: 100%;
+  min-height: 76px;
+  padding: 15px 20px;
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  border: 3px solid #229ed9;
+  border-radius: 20px 17px 22px 18px;
+  background: #229ed9;
+  color: white;
+  cursor: pointer;
+  font-size: clamp(16px, 1.12vw, 21px);
+  font-weight: 900;
+  transition: transform .2s ease, background .2s ease;
+}
+
+.telegramButton:hover:not(:disabled) {
+  background: #168bc3;
+  transform: translateY(-3px);
+}
+
+.telegramButton:disabled { cursor: wait; opacity: .7; }
+.buttonIcon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(255,255,255,.72);
+  border-radius: 50%;
+}
+.buttonIcon svg { width: 21px; height: 21px; fill: white; }
+.buttonLabel { text-align: left; }
+.buttonArrow { font-size: 1.4em; transition: transform .2s ease; }
+.telegramButton:hover:not(:disabled) .buttonArrow { transform: translateX(5px); }
+.telegramButton + p { margin: 12px 0 0; color: #365f31; font-size: 13px; }
+
+.telegramAction > small {
+  display: block;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.telegramIllustration {
+  position: relative;
+  min-height: 320px;
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.telegramIllustration > img {
+  object-fit: contain;
+  object-position: center;
+}
+
+@media (max-width: 900px) {
+  .resultMain, .telegram { grid-template-columns: 1fr; }
+  .sketch {
+    min-height: 170px;
+    width: min(100%, 520px);
+    padding-block: 24px;
+    justify-self: center;
+  }
+  .telegram::before { left: 82%; }
+  .telegramContent, .telegramAction, .telegramIllustration {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .telegramContent { order: 1; }
+  .telegramAction { order: 2; }
+  .telegramIllustration {
+    order: 3;
+    min-height: 270px;
+    width: min(100%, 470px);
+    justify-self: center;
+  }
+}
+
+@media (max-width: 560px) {
+  .result { margin-top: 38px; border-radius: 25px 18px 28px 20px; }
+  .result::before { inset: 9px; }
+  .resultMain { gap: 25px; padding: 32px 18px 27px; }
+  .eyebrow, .telegramLabel { font-size: 11px; }
+  .copy h3 { margin-block: 15px 13px; font-size: 30px; }
+  .summary { font-size: 17px; line-height: 1.48; }
+  .focus { margin-top: 24px; padding: 20px 17px 21px; }
+  .focus > span { font-size: 10px; }
+  .focus h4 { margin-block: 9px; font-size: 22px; }
+  .focus p { font-size: 16px; }
+  .focus small { font-size: 13px; }
+  .disclaimer { margin-top: 16px; font-size: 11px; }
+  .sketch { min-height: 130px; gap: 13px; padding: 18px 12px; }
+  .sketch > div { gap: 7px; }
+  .sketch > div > span { padding: 7px 8px; font-size: 11px; }
+  .sketch p { font-size: 13px; }
+  .telegram { gap: 25px; padding: 29px 18px 33px; }
+  .telegram::before { top: -29px; font-size: 40px; }
+  .telegram h4 { margin-block: 10px 12px; font-size: 24px; }
+  .telegramContent > p { font-size: 14px; }
+  .telegramSteps { margin-block: 22px 31px; grid-template-columns: 1fr; gap: 10px; }
+  .telegramSteps > div { min-height: 68px; padding: 13px 14px; }
+  .telegramSteps > div > span { font-size: 21px; }
+  .telegramSteps > div > strong { font-size: 14px; }
+  .telegramSteps > i { justify-self: center; transform: rotate(90deg); font-size: 21px; }
+  .telegramSteps > small { right: 0; bottom: -22px; font-size: 11px; }
+  .telegram li { font-size: 14px; }
+  .telegramButton { min-height: 66px; padding: 12px 13px; grid-template-columns: 32px 1fr auto; gap: 9px; font-size: 15px; }
+  .buttonIcon { width: 32px; height: 32px; }
+  .buttonIcon svg { width: 18px; height: 18px; }
+  .telegramAction > small { font-size: 12px; }
+  .telegramIllustration { min-height: 210px; }
+}

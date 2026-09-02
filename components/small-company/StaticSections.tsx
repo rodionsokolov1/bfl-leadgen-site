@@ -21,7 +21,9 @@ export function SmallCompanyHero() {
               <span className={styles.cardIndex}>0{index + 1}</span>
               <h2>{pain.title}</h2>
               {pain.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-              {pain.emphasis.map((paragraph) => <strong key={paragraph}>{paragraph}</strong>)}
+              {pain.inlineText ? (
+                <p className={styles.painInline}>{pain.inlineText}{" "}<strong>{pain.emphasis[0]}</strong></p>
+              ) : pain.emphasis.map((paragraph) => <strong key={paragraph}>{paragraph}</strong>)}
             </article>
           ))}
         </div>
@@ -53,28 +55,30 @@ export function TrustSection() {
   return (
     <section className={styles.trust} aria-labelledby="trust-title">
       <div className={styles.frame}>
-        <h2 id="trust-title">Да кто ты такой?!</h2>
         <div className={styles.trustGrid}>
           <div className={styles.trustCopy}>
-            <h3>Вот и пришло время представиться — я Родион Соколов</h3>
-            <p><strong>Работаю с юристами с 2019 года.</strong></p>
-            <p className={styles.veteran}>Я не наблюдатель, я ветеран этого рынка</p>
-            <p>Мой первый клиент на БФЛ <strong>«ОК-Банкрот Тюмень» — работаем с 2019 г. по сей день.</strong></p>
-            <blockquote>Там, где другие только тестируют — я уже знаю, что сработает. Там, где учились — я преподавал.<br /><br />Я не наблюдатель — я один из немногих, кто реально делает результат в этой нише. Иначе партнёры не работали бы со мной годами.</blockquote>
+            <span className={styles.trustLabel}>КОРОТКО ОБО МНЕ</span>
+            <h2 id="trust-title">Я работаю с юристами по БФЛ с 2019 года</h2>
+            <p className={styles.trustSubtitle}>Поэтому здесь не будет теории ради теории</p>
+            <div className={styles.trustBody}>
+              <p>Мой первый клиент в этой нише — «ОК-Банкрот Тюмень».<br />С ним мы работаем с 2019 года по сегодняшний день.</p>
+              <p>Это важно по одной причине:<br />если бы результата не было, такое партнёрство не длилось бы годами.</p>
+              <p>За это время я глубоко погрузился в рынок БФЛ и хорошо понимаю, где у юридических компаний чаще всего теряются деньги: в рекламе, обработке, дозвоне, назначении встреч и продажах.</p>
+            </div>
+            <blockquote className={styles.trustAccent}>Я не из тех, кто рассказывает, как “должно быть”.<br />Я смотрю на цифры, воронку и экономику — и уже потом делаю выводы.</blockquote>
           </div>
-          <div className={styles.proofVisual}>
-            {smallCompanyConfig.trustProofImage ? (
-              <Image src={smallCompanyConfig.trustProofImage} alt="Подтверждение работы с клиентом с 2019 года" fill sizes="(max-width: 900px) 100vw, 42vw" />
-            ) : (
-              <div className={styles.proofMissing}>
-                <Image src="/images/home/rodion-portrait.svg" alt="Родион Соколов" width={420} height={610} />
-                <p>Реальный скрин подтверждения будет подключён здесь после передачи исходного ассета.</p>
-              </div>
-            )}
-          </div>
+          <figure className={styles.proofVisual}>
+            <div className={styles.proofScene}>
+              <Image className={styles.proofGif} src={smallCompanyConfig.trustProofImage} alt="Экран телефона с реальными платежами от ОК-Банкрот" width={300} height={651} unoptimized />
+              <span className={`${styles.proofNote} ${styles.proofNoteOne}`}>работаем с 2019 года</span>
+              <span className={`${styles.proofNote} ${styles.proofNoteTwo}`}>реальные оплаты</span>
+              <span className={`${styles.proofNote} ${styles.proofNoteThree}`}>не разовый кейс</span>
+            </div>
+            <figcaption>На экране — часть реальных платежей от клиента, с которым мы работаем с 2019 года.</figcaption>
+          </figure>
         </div>
         <ul className={styles.factGrid}>
-          {trustFacts.map((fact) => <li key={fact}>{fact}</li>)}
+          {trustFacts.map((fact) => <li key={fact.value}><strong>{fact.value}</strong><span>{fact.label}</span></li>)}
         </ul>
       </div>
     </section>

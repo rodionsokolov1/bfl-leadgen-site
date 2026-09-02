@@ -1,7 +1,13 @@
 import type { AttributionContext } from "@/lib/attribution/attribution";
 import type { FunnelAssessmentAttribution, FunnelAssessmentPayload, FunnelInput } from "@/types/funnel";
 import { calculateFunnel } from "./calculations.ts";
-import { findPrimaryBottleneck, getFunnelStatuses, primaryRecommendation } from "./diagnostics.ts";
+import {
+  analyzeBottlenecks,
+  getDynamicConversionTargets,
+  getFunnelStatuses,
+  getOverallDiagnosisType,
+  primaryRecommendation,
+} from "./diagnostics.ts";
 
 export function assessmentAttributionFromContext(context: AttributionContext): FunnelAssessmentAttribution {
   const data = { ...context.firstTouch, ...context.current };
@@ -37,7 +43,16 @@ export function buildFunnelAssessmentPayload(
     leadsPerContract: calculation.leadsPerContract,
   };
   const statuses = getFunnelStatuses(input, metrics);
-  const primaryBottleneck = findPrimaryBottleneck(input, metrics, statuses);
+  const bottleneckAnalysis = analyzeBottlenecks(input, metrics, statuses);
+  const primaryBottleneck = bottleneckAnalysis.primaryBottleneck;
+  const requiredConversions = primaryBottleneck === "booking_rate" || primaryBottleneck === "show_rate" || primaryBottleneck === "close_rate"
+    ? getDynamicConversionTargets(primaryBottleneck, metrics, statuses).map((target) => ({
+        bottleneck: primaryBottleneck,
+        targetCost: target.targetCost,
+        requiredRate: target.requiredRate,
+        achievable: target.achievable,
+      }))
+    : [];
   return {
     version: "small-company-v1",
     createdAt,
@@ -47,6 +62,11 @@ export function buildFunnelAssessmentPayload(
     statuses,
     diagnosis: {
       primaryBottleneck,
+      primaryBottleneckImpact: bottleneckAnalysis.primaryBottleneckImpact,
+      secondaryBottlenecks: bottleneckAnalysis.secondaryBottlenecks,
+      multipleBottlenecks: bottleneckAnalysis.multipleBottlenecks,
+      requiredConversions,
+      overallDiagnosisType: getOverallDiagnosisType(metrics, statuses, bottleneckAnalysis),
       primaryVisibleRecommendation: primaryRecommendation(primaryBottleneck),
     },
     attribution,

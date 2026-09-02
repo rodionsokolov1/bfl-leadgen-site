@@ -7,8 +7,8 @@ export function IntroSection() {
     <section className={`${styles.section} ${styles.intro}`} aria-labelledby="intro-title">
       <div className={styles.frame}>
         <h2 id="intro-title" className={styles.introTitle}>
-          У федеральной компании, небольшого офиса<br />
-          и частного юриста разные проблемы,<br />
+          У федеральной компании, небольшого офиса<br className={styles.introTitleBreak} />{" "}
+          и частного юриста разные проблемы,<br className={styles.introTitleBreak} />{" "}
           но все хотят одного — <span>качественные лиды</span>
         </h2>
 

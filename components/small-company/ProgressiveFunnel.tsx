@@ -328,7 +328,6 @@ function StepFive(props: StepProps) {
           <p className={styles.importantCopy}>До состоявшейся встречи реклама уже проделала значительную часть своей работы. На этом этапе проблема может находиться совсем не в качестве заявок.</p>
         </div>
       ) : null}
-      <button className={styles.nextButton} type="button" onClick={props.onComplete}>Следующий шаг <span>→</span></button>
     </StepShell>
   );
 }
@@ -464,6 +463,34 @@ export function ProgressiveFunnel() {
       window.setTimeout(() => document.getElementById("funnel-results")?.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
     }
   }
+
+  useEffect(() => {
+    if (!hydrated || currentStep !== 5 || completedSteps >= 5 || values.contractsCount === "") return;
+
+    const timer = window.setTimeout(() => {
+      const completedInput = toInput(values);
+      if (Object.keys(validateFunnelInput(completedInput)).length > 0) return;
+
+      const metrics = calculateFunnel(completedInput);
+      const statuses = getFunnelStatuses(completedInput, metrics);
+      const attributionContext = getAttribution();
+      const attribution = { ...attributionContext.firstTouch, ...attributionContext.current };
+
+      setCompletedSteps(5);
+      trackEvent(stepEvents[4], { segment: "small_company", step: 5 });
+      trackEvent("FUNNEL_DIAGNOSTIC_COMPLETED", {
+        primary_bottleneck: findPrimaryBottleneck(completedInput, metrics, statuses),
+        statuses: JSON.stringify(statuses),
+        tracking_id: attribution.tracking_id,
+        utm_source: attribution.utm_source,
+        utm_medium: attribution.utm_medium,
+        utm_campaign: attribution.utm_campaign,
+      });
+      window.setTimeout(() => document.getElementById("funnel-results")?.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+    }, 450);
+
+    return () => window.clearTimeout(timer);
+  }, [completedSteps, currentStep, hydrated, values]);
 
   function editStep(step: number) {
     if (step > completedSteps) return;

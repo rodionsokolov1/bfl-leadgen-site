@@ -44,11 +44,11 @@ export const funnelBenchmarks: Record<FunnelMetricKey, FunnelBenchmark> = {
   showRate: {
     bands: [
       { status: "strong", min: .6, minInclusive: false },
-      { status: "good", min: .4, minInclusive: true, max: .6, maxInclusive: true },
-      { status: "attention", min: .25, minInclusive: true, max: .4, maxInclusive: false },
+      { status: "good", min: .5, minInclusive: true, max: .6, maxInclusive: true },
+      { status: "attention", min: .25, minInclusive: true, max: .5, maxInclusive: false },
       { status: "poor", max: .25, maxInclusive: false },
     ],
-    nextTarget: { good: .601, attention: .4, poor: .25 },
+    nextTarget: { good: .601, attention: .5, poor: .25 },
   },
   closeRate: {
     bands: [
