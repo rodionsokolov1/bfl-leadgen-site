@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { benchmarkLabels, benchmarkReactions } from "@/config/funnel";
 import { trackEvent } from "@/lib/analytics/events";
@@ -8,12 +8,12 @@ import { getAttribution } from "@/lib/attribution";
 import { calculateFunnel, estimatedAcquisitionSpend } from "@/lib/funnel/calculations";
 import { diagnoseMetric, findPrimaryBottleneck, getFunnelStatuses } from "@/lib/funnel/diagnostics";
 import { funnelFieldLabels, validateFunnelField, validateFunnelInput } from "@/lib/funnel/validation";
-import type { FunnelField, FunnelInput, FunnelMetricKey, FunnelStatus } from "@/types/funnel";
+import type { FunnelEconomicMetricKey, FunnelField, FunnelInput, FunnelLocalMetricKey, FunnelStatus } from "@/types/funnel";
 
 import { FunnelResults } from "./FunnelResults";
 import styles from "./funnel.module.css";
 
-const storageKey = "small-company:funnel:v2";
+const storageKey = "small-company:funnel:v3";
 
 type FunnelValues = Record<FunnelField, string>;
 type Errors = Partial<Record<FunnelField, string>>;
@@ -123,7 +123,7 @@ function AnimatedNumber({ value }: { value: number }) {
   return <>{formatNumber(displayed, 0)}</>;
 }
 
-function BenchmarkReaction({ metric, status }: { metric: FunnelMetricKey; status: FunnelStatus | null }) {
+function BenchmarkReaction({ metric, status }: { metric: FunnelLocalMetricKey; status: FunnelStatus | null }) {
   if (!status) return null;
   const reaction = benchmarkReactions[metric][status];
   return (
@@ -133,6 +133,18 @@ function BenchmarkReaction({ metric, status }: { metric: FunnelMetricKey; status
       {reaction.body ? <p>{reaction.body}</p> : null}
       {reaction.advice ? <ul>{reaction.advice.map((item) => <li key={item}>{item}</li>)}</ul> : null}
       {reaction.insight ? <p className={styles.handNote}>{reaction.insight}</p> : null}
+    </div>
+  );
+}
+
+function EconomicStatus({ label, metric, value }: { label: string; metric: FunnelEconomicMetricKey; value: number | null }) {
+  const status = diagnoseMetric(value, metric);
+  if (value === null || !status) return null;
+  return (
+    <div className={styles.economicStatus} data-status={status}>
+      <span>{label}</span>
+      <strong>{formatMoney(value)}</strong>
+      <small className={styles.statusBadge} data-status={status}>{benchmarkLabels[metric][status]}</small>
     </div>
   );
 }
@@ -218,7 +230,7 @@ function StepOne(props: StepProps) {
           <BenchmarkReaction metric="costPerLead" status={status} />
         </div>
       ) : null}
-      <button className={styles.nextButton} type="button" onClick={props.onComplete}>Сколько из них удалось дозвониться? <span>→</span></button>
+      <button className={styles.nextButton} type="button" onClick={props.onComplete}>Следующий шаг <span>→</span></button>
     </StepShell>
   );
 }
@@ -242,7 +254,7 @@ function StepTwo(props: StepProps) {
           <BenchmarkReaction metric="contactRate" status={status} />
         </div>
       ) : null}
-      <button className={styles.nextButton} type="button" onClick={props.onComplete}>Сколько встреч удалось назначить? <span>→</span></button>
+      <button className={styles.nextButton} type="button" onClick={props.onComplete}>Следующий шаг <span>→</span></button>
     </StepShell>
   );
 }
@@ -263,9 +275,10 @@ function StepThree(props: StepProps) {
             {result.bookingRate === null ? <span>Показатель не рассчитывается, потому что состоявшихся разговоров пока нет.</span> : null}
           </div>
           <BenchmarkReaction metric="bookingRate" status={status} />
+          <EconomicStatus label="Стоимость назначенной встречи" metric="costPerBookedMeeting" value={result.costPerBookedMeeting} />
         </div>
       ) : null}
-      <button className={styles.nextButton} type="button" onClick={props.onComplete}>А сколько встреч реально состоялось? <span>→</span></button>
+      <button className={styles.nextButton} type="button" onClick={props.onComplete}>Следующий шаг <span>→</span></button>
     </StepShell>
   );
 }
@@ -286,9 +299,10 @@ function StepFour(props: StepProps) {
             {result.showRate === null ? <span>Показатель не рассчитывается, потому что назначенных встреч пока нет.</span> : null}
           </div>
           <BenchmarkReaction metric="showRate" status={status} />
+          <EconomicStatus label="Стоимость состоявшейся встречи" metric="costPerHeldMeeting" value={result.costPerHeldMeeting} />
         </div>
       ) : null}
-      <button className={styles.nextButton} type="button" onClick={props.onComplete}>Сколько встреч закончились договором? <span>→</span></button>
+      <button className={styles.nextButton} type="button" onClick={props.onComplete}>Следующий шаг <span>→</span></button>
     </StepShell>
   );
 }
@@ -310,10 +324,11 @@ function StepFive(props: StepProps) {
             {result.closeRate === null ? <span>Показатель не рассчитывается, потому что состоявшихся встреч пока нет.</span> : null}
           </div>
           <BenchmarkReaction metric="closeRate" status={status} />
+          <EconomicStatus label="Стоимость договора" metric="costPerContract" value={result.costPerContract} />
           <p className={styles.importantCopy}>До состоявшейся встречи реклама уже проделала значительную часть своей работы. На этом этапе проблема может находиться совсем не в качестве заявок.</p>
         </div>
       ) : null}
-      <button className={styles.nextButton} type="button" onClick={props.onComplete}>Показать мою воронку целиком <span>→</span></button>
+      <button className={styles.nextButton} type="button" onClick={props.onComplete}>Следующий шаг <span>→</span></button>
     </StepShell>
   );
 }
@@ -353,7 +368,6 @@ function FunnelVisualization({ completedSteps, currentStep, input, onEdit }: { c
 
 export function ProgressiveFunnel() {
   const [hydrated, setHydrated] = useState(false);
-  const [started, setStarted] = useState(false);
   const [values, setValues] = useState<FunnelValues>(emptyValues);
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState(0);
@@ -367,8 +381,7 @@ export function ProgressiveFunnel() {
       try {
         const stored = window.sessionStorage.getItem(storageKey);
         if (stored) {
-          const parsed = JSON.parse(stored) as { started?: boolean; values?: Partial<FunnelValues>; currentStep?: number; completedSteps?: number };
-          setStarted(Boolean(parsed.started));
+          const parsed = JSON.parse(stored) as { values?: Partial<FunnelValues>; currentStep?: number; completedSteps?: number };
           setValues({ ...emptyValues, ...parsed.values });
           setCurrentStep(Math.min(5, Math.max(1, parsed.currentStep ?? 1)));
           setCompletedSteps(Math.min(5, Math.max(0, parsed.completedSteps ?? 0)));
@@ -382,29 +395,14 @@ export function ProgressiveFunnel() {
     return () => window.clearTimeout(hydrationTimer);
   }, []);
 
-  const beginFunnel = useCallback(() => {
-    setStarted(true);
-    setCurrentStep(1);
-    if (!started) trackEvent("FUNNEL_DIAGNOSTIC_STARTED", { segment: "small_company" });
-  }, [started]);
-
-  useEffect(() => {
-    window.addEventListener("small-funnel-start", beginFunnel);
-    const hashTimer = window.location.hash === "#funnel-start" ? window.setTimeout(beginFunnel, 0) : null;
-    return () => {
-      if (hashTimer !== null) window.clearTimeout(hashTimer);
-      window.removeEventListener("small-funnel-start", beginFunnel);
-    };
-  }, [beginFunnel]);
-
   useEffect(() => {
     if (!hydrated) return;
     try {
-      window.sessionStorage.setItem(storageKey, JSON.stringify({ started, values, currentStep, completedSteps, isValid: isFunnelValid }));
+      window.sessionStorage.setItem(storageKey, JSON.stringify({ values, currentStep, completedSteps, isValid: isFunnelValid }));
     } catch {
       // Keep the state in memory when storage is unavailable.
     }
-  }, [completedSteps, currentStep, hydrated, isFunnelValid, started, values]);
+  }, [completedSteps, currentStep, hydrated, isFunnelValid, values]);
 
   const errors = useMemo(() => stepFields.flat().reduce<Errors>((result, field) => {
     const step = stepFields.findIndex((fields) => fields.includes(field)) + 1;
@@ -491,26 +489,15 @@ export function ProgressiveFunnel() {
   return (
     <section className={styles.funnelSection} id="funnel-start" aria-labelledby="progressive-funnel-title">
       <div className={styles.frame}>
-        {!started ? (
-          <div className={styles.closedState}>
-            <span className={styles.closedArrow} aria-hidden="true">↘</span>
-            <h2 id="progressive-funnel-title">Воронка пока свёрнута</h2>
-            <p>Начни диагностику выше — и здесь появится только первый вопрос.</p>
-            <button type="button" className={styles.nextButton} onClick={beginFunnel}>Начать разбор <span>→</span></button>
-          </div>
-        ) : (
-          <>
-            <div className={styles.progressBar} aria-label={"Прогресс: " + currentStep + " из 5 шагов"}>
-              <span>ДИАГНОСТИКА</span><strong>{currentStep}/5</strong><i><b style={{ width: (currentStep / 5) * 100 + "%" }} /></i>
-            </div>
-            <h2 className={styles.srOnly} id="progressive-funnel-title">Пошаговая диагностика воронки</h2>
-            <div className={styles.funnelGrid} id="diagnostic-shell">
-              <div className={styles.steps}>{currentQuestion}</div>
-              <FunnelVisualization completedSteps={completedSteps} currentStep={currentStep} input={input} onEdit={editStep} />
-            </div>
-            {completedSteps === 5 && isFunnelValid ? <FunnelResults input={input} /> : null}
-          </>
-        )}
+        <div className={styles.progressBar} aria-label={"Прогресс: " + currentStep + " из 5 шагов"}>
+          <span>ДИАГНОСТИКА</span><strong>{currentStep}/5</strong><i><b style={{ width: (currentStep / 5) * 100 + "%" }} /></i>
+        </div>
+        <h2 className={styles.srOnly} id="progressive-funnel-title">Пошаговая диагностика воронки</h2>
+        <div className={styles.funnelGrid} id="diagnostic-shell">
+          <div className={styles.steps}>{currentQuestion}</div>
+          <FunnelVisualization completedSteps={completedSteps} currentStep={currentStep} input={input} onEdit={editStep} />
+        </div>
+        {completedSteps === 5 && isFunnelValid ? <FunnelResults input={input} /> : null}
       </div>
     </section>
   );

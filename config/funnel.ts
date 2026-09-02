@@ -1,4 +1,4 @@
-import type { FunnelMetricKey, FunnelStatus, PrimaryBottleneck } from "@/types/funnel";
+import type { FunnelLocalMetricKey, FunnelMetricKey, FunnelStatus, PrimaryBottleneck } from "@/types/funnel";
 
 export type BenchmarkBand = {
   status: FunnelStatus;
@@ -21,7 +21,7 @@ export const funnelBenchmarks: Record<FunnelMetricKey, FunnelBenchmark> = {
       { status: "attention", min: 1500, minInclusive: true, max: 2500, maxInclusive: true },
       { status: "poor", min: 2500, minInclusive: false },
     ],
-    nextTarget: { good: 800, attention: 1500, poor: 2500 },
+    nextTarget: { good: 799.99, attention: 1499.99, poor: 2500 },
   },
   contactRate: {
     bands: [
@@ -59,22 +59,52 @@ export const funnelBenchmarks: Record<FunnelMetricKey, FunnelBenchmark> = {
     ],
     nextTarget: { good: .601, attention: .4, poor: .25 },
   },
+  costPerBookedMeeting: {
+    bands: [
+      { status: "strong", max: 5000, maxInclusive: true },
+      { status: "good", min: 5000, minInclusive: false, max: 7500, maxInclusive: true },
+      { status: "attention", min: 7500, minInclusive: false, max: 12000, maxInclusive: true },
+      { status: "poor", min: 12000, minInclusive: false },
+    ],
+    nextTarget: { good: 5000, attention: 7500, poor: 12000 },
+  },
+  costPerHeldMeeting: {
+    bands: [
+      { status: "strong", max: 9000, maxInclusive: true },
+      { status: "good", min: 9000, minInclusive: false, max: 14000, maxInclusive: true },
+      { status: "attention", min: 14000, minInclusive: false, max: 18000, maxInclusive: false },
+      { status: "poor", min: 18000, minInclusive: true },
+    ],
+    nextTarget: { good: 9000, attention: 14000, poor: 17999.99 },
+  },
+  costPerContract: {
+    bands: [
+      { status: "strong", max: 25000, maxInclusive: true },
+      { status: "good", min: 25000, minInclusive: false, max: 40000, maxInclusive: true },
+      { status: "attention", min: 40000, minInclusive: false, max: 50000, maxInclusive: true },
+      { status: "poor", min: 50000, minInclusive: false },
+    ],
+    nextTarget: { good: 25000, attention: 40000, poor: 50000 },
+  },
 };
 
 export const benchmarkLabels: Record<FunnelMetricKey, Record<FunnelStatus, string>> = {
   costPerLead: { strong: "Сильный результат", good: "Хороший результат", attention: "Есть что докрутить", poor: "Дорого" },
-  contactRate: { strong: "Сильный результат", good: "Хороший результат", attention: "В пределах, но есть что докрутить", poor: "Плохо" },
-  bookingRate: { strong: "Сильный результат", good: "Хороший результат", attention: "Есть что докрутить", poor: "Плохо" },
-  showRate: { strong: "Сильный результат", good: "Хороший результат", attention: "Есть что докрутить", poor: "Плохо" },
-  closeRate: { strong: "Сильный результат", good: "Хороший результат", attention: "В целом приемлемо", poor: "Плохо" },
+  contactRate: { strong: "Сильный", good: "Хорошо", attention: "Есть что докрутить", poor: "Плохо" },
+  bookingRate: { strong: "Сильный", good: "Хорошо", attention: "Есть что докрутить", poor: "Плохо" },
+  showRate: { strong: "Сильный", good: "Хорошо", attention: "Есть что докрутить", poor: "Плохо" },
+  closeRate: { strong: "Сильный", good: "Хорошо", attention: "В целом приемлемо", poor: "Плохо" },
+  costPerBookedMeeting: { strong: "Отлично", good: "Хорошо", attention: "Есть что докрутить", poor: "Дорого" },
+  costPerHeldMeeting: { strong: "Отлично", good: "Хорошо", attention: "Есть что докрутить", poor: "Дорого" },
+  costPerContract: { strong: "Идеально", good: "Хорошо", attention: "Нужно искать, что докрутить", poor: "Дорого" },
 };
 
 type BenchmarkReaction = { title: string; body?: string; advice?: readonly string[]; insight?: string };
 
 const costAdvice = [
-  "Проверить, насколько оффер попадает в ситуацию клиента.",
-  "Проверить посадочную и соответствие обещания в рекламе содержанию страницы.",
-  "Не гнаться за более дешёвой заявкой, если текущая дальше конвертируется сильно.",
+  "Проверить оффер.",
+  "Проверить посадочную страницу.",
+  "Посмотреть дальнейшую конверсию воронки.",
 ] as const;
 
 const contactAdvice = [
@@ -106,16 +136,16 @@ const closeAdvice = [
   "Есть ли follow-up после встречи.",
 ] as const;
 
-export const benchmarkReactions: Record<FunnelMetricKey, Record<FunnelStatus, BenchmarkReaction>> = {
+export const benchmarkReactions: Record<FunnelLocalMetricKey, Record<FunnelStatus, BenchmarkReaction>> = {
   costPerLead: {
     strong: { title: "Стоимость заявки выглядит сильно.", body: "Но пока это только вход в воронку — смотрим, во что эти заявки превращаются дальше." },
     good: { title: "По стоимости заявки всё выглядит хорошо.", body: "Вывод о рекламе всё равно делаем только после дальнейшей конверсии." },
     attention: { title: "Здесь есть что докрутить.", body: "Я бы посмотрел оффер и посадочную, но сначала проверим качество этих заявок дальше по воронке.", advice: costAdvice },
-    poor: { title: "Заявка обходится дорого. Но выводы делать рано.", body: "Если дальше она хорошо превращается во встречи и договоры, такая стоимость может быть нормальной для твоей экономики.", advice: costAdvice },
+    poor: { title: "Стоимость заявки высокая.", body: "Но выводы делать рано — важно посмотреть, как эти заявки конвертируются дальше.", advice: costAdvice },
   },
   contactRate: {
     strong: { title: "С дозвоном всё очень хорошо.", body: "Здесь явной потери не видно — идём дальше." },
-    good: { title: "Хороший дозвон.", body: "Основной резерв, скорее всего, находится уже после первого разговора." },
+    good: { title: "Хороший дозвон.", body: "Большая часть заявок доходит до разговора. Небольшой резерв ещё есть в скорости и количестве попыток дозвона — дальше смотрим, как разговоры превращаются во встречи." },
     attention: { title: "Дозвон в пределах нормы, но здесь есть запас.", body: "Даже несколько дополнительных состоявшихся разговоров могут заметно изменить экономику следующих этапов.", advice: contactAdvice },
     poor: { title: "Здесь уже есть заметная просадка.", body: "Значительная часть заявок не доходит даже до первого разговора.", advice: [...contactAdvice, "Проверь регламент повторных попыток дозвона."] },
   },
@@ -123,13 +153,13 @@ export const benchmarkReactions: Record<FunnelMetricKey, Record<FunnelStatus, Be
     strong: { title: "Сильная конверсия в назначенную встречу.", body: "Первый разговор хорошо переводит человека в следующий шаг." },
     good: { title: "Хороший результат.", body: "Смотрим, сколько назначенных встреч действительно состоятся." },
     attention: { title: "Здесь есть что докрутить.", body: "Люди отвечают на звонок, но заметная часть не переходит к встрече.", advice: bookingAdvice, insight: "Если реклама обещала одно, а менеджер начинает разговор с другого — хороший лид легко превращается в «плохой»." },
-    poor: { title: "Похоже, одно из слабых мест находится в первом разговоре.", body: "До человека дозвонились, но дальше воронка резко сужается.", advice: bookingAdvice, insight: "Если реклама обещала одно, а менеджер начинает разговор с другого — хороший лид легко превращается в «плохой»." },
+    poor: { title: "Слабое место — перевод разговора во встречу.", body: "До человека дозвонились, но дальше воронка резко сужается.", advice: bookingAdvice, insight: "Если реклама обещала одно, а менеджер начинает разговор с другого — хороший лид легко превращается в «плохой»." },
   },
   showRate: {
     strong: { title: "Сильная доходимость.", body: "Люди не просто соглашаются на встречу — они действительно приходят." },
     good: { title: "Хороший результат.", body: "Смотрим последний этап — сколько встреч превращаются в договор." },
     attention: { title: "Здесь есть запас.", body: "Человек уже согласился на встречу, но часть ценности теряется между назначением и самой встречей.", advice: showAdvice },
-    poor: { title: "Здесь воронка теряет много уже назначенных встреч.", body: "Покупать сверху больше заявок до исправления этого этапа может просто увеличить потери.", advice: showAdvice },
+    poor: { title: "Слабое место — доходимость до назначенной встречи.", body: "Покупать сверху больше заявок до исправления этого этапа может просто увеличить потери.", advice: showAdvice },
   },
   closeRate: {
     strong: { title: "Сильная конверсия встречи в договор." },

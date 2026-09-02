@@ -39,6 +39,12 @@
 .statusBadge { justify-self: start; padding: 7px 12px; border-radius: 14px 11px 16px 12px; color: #234829; background: #e5f5eb; font-size: 14px; font-weight: 900; }
 .statusBadge[data-status="attention"] { color: #7a5415; background: #fff0c8; }
 .statusBadge[data-status="poor"] { color: #8b3028; background: #fbe2de; }
+.economicStatus { margin-top: 12px; padding: 17px 20px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 14px; border-left: 4px solid rgba(47,158,90,.5); border-radius: 0 16px 16px 0; background: rgba(47,158,90,.055); }
+.economicStatus[data-status="attention"] { border-left-color: #d59a2a; background: rgba(255,240,200,.45); }
+.economicStatus[data-status="poor"] { border-left-color: #c9584d; background: rgba(251,226,222,.55); }
+.economicStatus > span { color: var(--muted); font-size: 15px; }
+.economicStatus > strong { font-size: clamp(19px, 1.3vw, 24px); }
+.economicStatus .statusBadge { justify-self: end; }
 .importantCopy { margin: 22px 0 0; padding: 18px 22px; border-left: 4px solid var(--accent); background: rgba(47,158,90,.06); font-weight: 700; line-height: 1.55; }
 .nextButton { width: 100%; min-height: 66px; margin-top: 30px; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; border: 3px solid var(--accent); border-radius: 20px 17px 22px 18px; background: transparent; color: var(--accent); cursor: pointer; font-size: clamp(18px, 1.25vw, 23px); font-weight: 800; transition: background .2s ease, color .2s ease, transform .2s ease; }
 .nextButton:hover { background: var(--accent); color: white; transform: translateY(-2px); }
@@ -79,6 +85,8 @@
   .inputShell { min-height: 64px; }
   .inputShell input { font-size: 26px; }
   .liveResult { padding: 22px 18px; font-size: 17px; }
+  .economicStatus { grid-template-columns: 1fr auto; padding: 15px 16px; }
+  .economicStatus .statusBadge { grid-column: 1 / -1; justify-self: start; }
   .nextButton { min-height: 58px; padding: 14px 17px; font-size: 17px; }
   .visual { min-height: 520px; padding-inline: 16px; }
   .visualStage { min-height: 65px; }

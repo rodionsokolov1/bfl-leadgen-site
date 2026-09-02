@@ -16,6 +16,9 @@ export interface ScenarioResult {
   booked: number;
   held: number;
   contracts: number;
+  costPerContact: number | null;
+  costPerBookedMeeting: number | null;
+  costPerHeldMeeting: number | null;
   costPerContract: number | null;
 }
 
@@ -41,5 +44,16 @@ export function calculateScenario(base: FunnelInput, scenario: FunnelScenario): 
   const booked = contacted * clampRate(scenario.bookingRate);
   const held = booked * clampRate(scenario.showRate);
   const contracts = held * clampRate(scenario.closeRate);
-  return { adSpend, leads, contacted, booked, held, contracts, costPerContract: safeDivide(adSpend, contracts) };
+  return {
+    adSpend,
+    leads,
+    contacted,
+    booked,
+    held,
+    contracts,
+    costPerContact: safeDivide(adSpend, contacted),
+    costPerBookedMeeting: safeDivide(adSpend, booked),
+    costPerHeldMeeting: safeDivide(adSpend, held),
+    costPerContract: safeDivide(adSpend, contracts),
+  };
 }

@@ -5,7 +5,9 @@
 .budget { margin: 0 0 45px; color: var(--muted); font-size: clamp(20px, 1.4vw, 27px); }
 .budget strong { color: var(--ink); }
 .stageList { display: grid; gap: 14px; justify-items: center; }
-.summaryStage { width: 100%; min-height: 112px; padding: 20px 28px; display: grid; grid-template-columns: minmax(220px, 1fr) minmax(300px, .9fr) minmax(170px, auto); align-items: center; gap: 26px; border: 2px solid rgba(47,158,90,.38); border-radius: 22px 17px 24px 18px; background: rgba(255,253,248,.85); }
+.summaryStage { width: 100%; min-height: 112px; padding: 20px 28px; display: grid; grid-template-columns: minmax(220px, .8fr) minmax(380px, 1.2fr); align-items: center; gap: 26px; border: 2px solid rgba(47,158,90,.38); border-radius: 22px 17px 24px 18px; background: rgba(255,253,248,.85); }
+.summaryStage[data-status="attention"] { border-color: rgba(213,154,42,.7); background: rgba(255,248,226,.82); }
+.summaryStage[data-status="poor"] { border-color: rgba(201,88,77,.7); background: rgba(255,239,236,.82); }
 .summaryStage:nth-child(2) { width: 94%; }
 .summaryStage:nth-child(3) { width: 88%; }
 .summaryStage:nth-child(4) { width: 82%; }
@@ -14,10 +16,10 @@
 .summaryStage span { color: var(--muted); font-size: clamp(16px, 1.1vw, 20px); }
 .summaryStage strong { color: var(--accent); font-size: clamp(28px, 2vw, 38px); }
 .summaryStage dl { margin: 0; display: grid; gap: 7px; }
-.summaryStage dl > div { display: flex; justify-content: space-between; gap: 12px; }
+.summaryStage dl > div { display: grid; grid-template-columns: minmax(120px, 1fr) minmax(220px, auto); align-items: center; gap: 12px; }
 .summaryStage dt { color: var(--muted); font-size: 14px; }
-.summaryStage dd { margin: 0; font-weight: 800; }
-.summaryStatus, .noStatus { justify-self: end; padding: 8px 12px; border-radius: 14px; color: #234829; background: #e5f5eb; font-size: 13px; font-weight: 900; text-align: center; }
+.summaryStage dd { margin: 0; display: flex; justify-content: flex-end; align-items: center; gap: 10px; font-weight: 800; }
+.summaryStatus, .noStatus { padding: 7px 10px; border-radius: 14px; color: #234829; background: #e5f5eb; font-size: 12px; font-weight: 900; text-align: center; }
 .summaryStatus[data-status="attention"] { color: #7a5415; background: #fff0c8; }
 .summaryStatus[data-status="poor"] { color: #8b3028; background: #fbe2de; }
 .noStatus { color: var(--muted); background: rgba(84,89,82,.09); }
@@ -27,6 +29,11 @@
 .bottleneck h3 { margin: 20px 0; font-size: clamp(30px, 2.7vw, 48px); line-height: 1.15; }
 .bottleneck p { max-width: 1050px; font-size: clamp(18px, 1.25vw, 23px); line-height: 1.6; }
 .bottleneck > strong { display: block; margin-top: 24px; padding: 20px 24px; border-left: 5px solid var(--accent); background: rgba(47,158,90,.07); font-size: clamp(18px, 1.2vw, 22px); line-height: 1.55; }
+.primaryFocus { display: grid; gap: 7px; margin-top: 28px !important; }
+.primaryFocus > strong { color: var(--accent); font-size: .82em; letter-spacing: .04em; text-transform: uppercase; }
+.primaryFocus > span { font-size: 1.12em; font-weight: 800; }
+.dynamicTargets { margin-top: 24px; padding: 20px 24px; border: 2px dashed rgba(47,158,90,.38); border-radius: 20px 16px 23px 18px; background: rgba(47,158,90,.045); }
+.dynamicTargets p { margin: 6px 0; font-size: clamp(16px, 1.05vw, 19px); }
 .resultLink { display: inline-flex; margin-top: 24px; padding: 16px 22px; border: 3px solid var(--accent); border-radius: 19px 15px 21px 17px; color: var(--accent); font-weight: 900; }
 .bottleneck small { display: block; margin-top: 22px; color: var(--muted); }
 .whatIf { margin-top: 145px; padding: 70px; border: 3px solid var(--accent); border-radius: 38px 27px 42px 30px; background: rgba(255,253,248,.86); box-shadow: 0 22px 60px rgba(34,50,29,.08); }
@@ -35,6 +42,8 @@
 .whatIfHeading > p { max-width: 900px; color: var(--muted); font-size: clamp(19px, 1.35vw, 25px); }
 .controlList { display: grid; gap: 18px; margin-top: 50px; }
 .scenarioControl { display: grid; grid-template-columns: minmax(180px,.6fr) 1.4fr 150px; align-items: center; gap: 24px; padding: 18px 22px; border-radius: 18px; background: rgba(47,158,90,.05); font-weight: 700; }
+.scenarioLabel { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.scenarioLabel .summaryStatus { font-size: 10px; }
 .scenarioControl input[type="range"] { width: 100%; accent-color: var(--accent); }
 .scenarioNumber { min-height: 50px; padding: 0 12px; display: flex; align-items: center; gap: 7px; border: 2px solid rgba(47,158,90,.34); border-radius: 14px; background: white; }
 .scenarioNumber input { min-width: 0; width: 100%; border: 0; outline: 0; font-weight: 800; text-align: right; }
@@ -44,7 +53,8 @@
 .comparison dl { margin: 20px 0 0; }
 .comparison dl > div { padding: 13px 0; display: flex; justify-content: space-between; gap: 20px; border-bottom: 1px solid rgba(47,158,90,.15); }
 .comparison dl > div:last-child { border-bottom: 0; }
-.comparison dd { margin: 0; font-size: 21px; font-weight: 800; }
+.comparison dd { margin: 0; display: flex; align-items: center; justify-content: flex-end; gap: 8px; font-size: 18px; font-weight: 800; text-align: right; }
+.comparison .summaryStatus { flex: 0 0 auto; font-size: 10px; }
 .compareArrow { color: var(--accent); font: 700 46px/1 var(--font-note); }
 .deltaList { margin: 30px 0 0; padding: 25px 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 25px; border-radius: 20px; background: #e5f5eb; }
 .deltaList > div { display: flex; justify-content: space-between; gap: 15px; }
@@ -53,7 +63,6 @@
 
 @media (max-width: 1000px) {
   .summaryStage { width: 100% !important; grid-template-columns: 1fr 1fr; }
-  .summaryStatus, .noStatus { justify-self: start; }
   .whatIf { padding: 45px 30px; }
   .scenarioControl { grid-template-columns: 1fr 130px; }
   .scenarioControl input[type="range"] { grid-column: 1 / -1; grid-row: 2; }
@@ -65,6 +74,8 @@
   .summaryStage { padding: 18px 17px; grid-template-columns: 1fr; gap: 13px; }
   .summaryStage > div:first-child { align-items: center; }
   .summaryStage dl { gap: 5px; }
+  .summaryStage dl > div { grid-template-columns: 1fr; gap: 6px; }
+  .summaryStage dd { justify-content: space-between; }
   .leadsPerContract { padding: 20px 18px; }
   .bottleneck { padding: 30px 20px; }
   .whatIf { margin-top: 90px; padding: 58px 18px 28px; }

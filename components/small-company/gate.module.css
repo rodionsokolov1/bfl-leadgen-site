@@ -1,6 +1,7 @@
-.gate { margin-top: 145px; padding: 70px; border: 2px solid rgba(47,158,90,.25); border-radius: 38px 28px 42px 30px; background: rgba(255,253,248,.78); box-shadow: 0 20px 55px rgba(34,50,29,.07); }
+.gate { margin-top: 38px; padding: 42px 46px; border: 2px solid rgba(47,158,90,.25); border-radius: 30px 22px 34px 24px; background: rgba(255,253,248,.78); box-shadow: 0 16px 42px rgba(34,50,29,.06); }
 .eyebrow { display: inline-block; padding: 10px 20px; border-radius: 20px; background: #e5f5eb; color: var(--accent); font-weight: 800; }
-.gate h2 { margin: 28px 0 45px; max-width: 1150px; font-size: clamp(38px, 3.6vw, 64px); line-height: 1.1; letter-spacing: -.04em; }
+.gate h2 { margin: 20px 0 14px; max-width: 920px; font-size: clamp(30px, 2.65vw, 46px); line-height: 1.12; letter-spacing: -.035em; }
+.gateHeading > p { max-width: 920px; margin: 0; color: var(--muted); font-size: clamp(18px, 1.2vw, 22px); line-height: 1.55; }
 .teaserGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .teaserGrid article { min-height: 190px; padding: 28px; display: grid; align-content: start; gap: 24px; border: 2px solid rgba(47,158,90,.24); border-radius: 24px 18px 27px 20px; background: white; overflow: hidden; }
 .teaserGrid article > span { color: var(--accent); font-weight: 900; }
@@ -11,7 +12,7 @@
 .lockedCard i:nth-child(2) { width: 82%; }
 .lockedCard i:nth-child(3) { width: 62%; }
 .lockedCard::after { content: ""; position: absolute; inset: 55% 0 0; background: linear-gradient(transparent, rgba(255,255,255,.94)); pointer-events: none; }
-.gateAction { margin-top: 38px; padding-top: 35px; display: grid; grid-template-columns: 1fr .85fr; align-items: center; gap: 40px; border-top: 1px solid rgba(47,158,90,.2); }
+.gateAction { margin-top: 28px; padding-top: 28px; display: grid; grid-template-columns: 1fr .85fr; align-items: center; gap: 32px; border-top: 1px solid rgba(47,158,90,.2); }
 .telegramButton { min-height: 76px; width: 100%; padding: 18px 26px; display: flex; justify-content: space-between; align-items: center; border: 3px solid var(--accent); border-radius: 20px 17px 22px 18px; background: var(--accent); color: white; cursor: pointer; font-size: clamp(18px, 1.25vw, 23px); font-weight: 800; }
 .telegramButton:disabled { cursor: wait; opacity: .72; }
 .telegramButton span { font-size: 1.4em; }
@@ -25,8 +26,8 @@
 }
 
 @media (max-width: 560px) {
-  .gate { margin-top: 90px; padding: 36px 18px; }
-  .gate h2 { font-size: 34px; }
+  .gate { margin-top: 28px; padding: 30px 18px; }
+  .gate h2 { font-size: 30px; }
   .teaserGrid article { min-height: 160px; padding: 23px 19px; }
   .telegramButton { min-height: 60px; padding: 14px 16px; font-size: 17px; }
 }

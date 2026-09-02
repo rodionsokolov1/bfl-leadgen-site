@@ -7,21 +7,21 @@ import styles from "./smallCompany.module.css";
 
 export function SmallCompanyHero() {
   return (
-    <section className={styles.hero} aria-labelledby="small-company-title">
+    <section className={styles.hero} aria-label="Диагностика воронки для частного юриста и небольшой компании">
       <div className={styles.scribbleDots} aria-hidden="true" />
       <div className={styles.frame}>
         <div className={styles.branchMark}>
           <span className={styles.number}>01</span>
           <span className={styles.eyebrow}>ТЫ ЧАСТНЫЙ ЮРИСТ ИЛИ У ТЕБЯ 1–2 ОФИСА</span>
         </div>
-        <h1 id="small-company-title"><span className={styles.heroQualifier}>Скорее всего</span><span>дело не только в количестве лидов</span></h1>
         <p className={styles.heroLead}>Если ты уже запускал рекламу на БФЛ, то наверняка сталкивался хотя бы с одной из этих ситуаций:</p>
         <div className={styles.painGrid}>
           {smallCompanyPains.map((pain, index) => (
             <article className={styles.painCard} key={pain.title}>
               <span className={styles.cardIndex}>0{index + 1}</span>
               <h2>{pain.title}</h2>
-              <p>{pain.body}</p>
+              {pain.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+              {pain.emphasis.map((paragraph) => <strong key={paragraph}>{paragraph}</strong>)}
             </article>
           ))}
         </div>
@@ -43,7 +43,6 @@ export function FunnelIntro() {
           <h2 id="funnel-intro-title">За 3 минуты посмотрим, где у тебя реально теряются деньги</h2>
           <p>Не нужен доступ к рекламному кабинету, CRM или отчётам.</p>
           <p><strong>Возьми показатели за один обычный полный месяц и последовательно введи всего несколько цифр</strong></p>
-          <FunnelStartLink className={styles.primaryButton} href="#funnel-start">Начать разбор <span>→</span></FunnelStartLink>
         </div>
       </div>
     </section>
@@ -54,11 +53,11 @@ export function TrustSection() {
   return (
     <section className={styles.trust} aria-labelledby="trust-title">
       <div className={styles.frame}>
-        <span className={styles.eyebrow}>СПРАВЕДЛИВЫЙ ВОПРОС</span>
-        <h2 id="trust-title">А ты вообще кто такой и почему тебе можно доверять?</h2>
+        <h2 id="trust-title">Да кто ты такой?!</h2>
         <div className={styles.trustGrid}>
           <div className={styles.trustCopy}>
-            <h3>Работаю с юристами с 2019 года</h3>
+            <h3>Вот и пришло время представиться — я Родион Соколов</h3>
+            <p><strong>Работаю с юристами с 2019 года.</strong></p>
             <p className={styles.veteran}>Я не наблюдатель, я ветеран этого рынка</p>
             <p>Мой первый клиент на БФЛ <strong>«ОК-Банкрот Тюмень» — работаем с 2019 г. по сей день.</strong></p>
             <blockquote>Там, где другие только тестируют — я уже знаю, что сработает. Там, где учились — я преподавал.<br /><br />Я не наблюдатель — я один из немногих, кто реально делает результат в этой нише. Иначе партнёры не работали бы со мной годами.</blockquote>

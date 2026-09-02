@@ -1,11 +1,18 @@
 export type FunnelStatus = "strong" | "good" | "attention" | "poor";
 
-export type FunnelMetricKey =
+export type FunnelLocalMetricKey =
   | "costPerLead"
   | "contactRate"
   | "bookingRate"
   | "showRate"
   | "closeRate";
+
+export type FunnelEconomicMetricKey =
+  | "costPerBookedMeeting"
+  | "costPerHeldMeeting"
+  | "costPerContract";
+
+export type FunnelMetricKey = FunnelLocalMetricKey | FunnelEconomicMetricKey;
 
 export type PrimaryBottleneck =
   | "cost_per_lead"
