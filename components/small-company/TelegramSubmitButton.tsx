@@ -4,6 +4,8 @@ import { useState, type ReactNode } from "react";
 
 import { getAttribution } from "@/lib/attribution";
 import { trackEvent } from "@/lib/analytics/events";
+import { getMetrikaClientId } from "@/lib/analytics/metrika";
+import { mergeFirstTouchAttribution } from "@/lib/attribution/storage";
 import { assessmentAttributionFromContext, buildFunnelAssessmentPayload } from "@/lib/funnel/assessment";
 import { submitFunnelAssessment } from "@/lib/funnel/submitAssessment";
 import type { FunnelInput } from "@/types/funnel";
@@ -26,6 +28,8 @@ export function TelegramSubmitButton({ children, className, disabled = false, in
     if (!input || state === "submitting") return;
     setState("submitting");
     setMessage("");
+    const metrikaClientId = await getMetrikaClientId();
+    if (metrikaClientId) mergeFirstTouchAttribution({ ym_client_id: metrikaClientId });
     const attributionContext = getAttribution();
     const attribution = assessmentAttributionFromContext(attributionContext);
     trackEvent("FUNNEL_TELEGRAM_CTA_CLICKED", { segment: "small_company", source });

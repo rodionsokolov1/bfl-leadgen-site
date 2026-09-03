@@ -15,3 +15,10 @@ export function saveFirstTouchAttribution(attribution: AttributionData): Attribu
   window.localStorage.setItem(firstTouchKey, JSON.stringify(attribution));
   return attribution;
 }
+
+export function mergeFirstTouchAttribution(attribution: AttributionData): AttributionData {
+  if (!canUseStorage() || Object.keys(attribution).length === 0) return getFirstTouchAttribution();
+  const merged = { ...getFirstTouchAttribution(), ...attribution };
+  window.localStorage.setItem(firstTouchKey, JSON.stringify(merged));
+  return merged;
+}

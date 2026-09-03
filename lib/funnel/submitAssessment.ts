@@ -9,7 +9,7 @@ export interface SubmitAssessmentResult {
 
 function telegramUrl(token: string): string | null {
   const username = smallCompanyConfig.telegram.botUsername.trim().replace(/^@/, "");
-  return username ? `https://t.me/${username}?start=${encodeURIComponent(`funnel_${token}`)}` : null;
+  return username ? `https://t.me/${username}?start=${encodeURIComponent(token)}` : null;
 }
 
 function assertToken(value: unknown): string {
@@ -26,11 +26,17 @@ async function submitToEndpoint(payload: FunnelAssessmentPayload): Promise<Submi
     body: JSON.stringify(payload),
   });
   if (!response.ok) throw new Error(`Не удалось сохранить воронку: HTTP ${response.status}.`);
-  const body = await response.json() as { token?: unknown; telegramUrl?: unknown };
-  const token = assertToken(body.token);
+  const body = await response.json() as {
+    tracking_id?: unknown;
+    telegram_url?: unknown;
+    token?: unknown;
+    telegramUrl?: unknown;
+  };
+  const token = assertToken(body.tracking_id ?? body.token);
+  const responseTelegramUrl = body.telegram_url ?? body.telegramUrl;
   return {
     token,
-    telegramUrl: typeof body.telegramUrl === "string" && body.telegramUrl.startsWith("https://t.me/") ? body.telegramUrl : telegramUrl(token),
+    telegramUrl: typeof responseTelegramUrl === "string" && responseTelegramUrl.startsWith("https://t.me/") ? responseTelegramUrl : telegramUrl(token),
     mocked: false,
   };
 }
