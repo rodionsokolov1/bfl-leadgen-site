@@ -55,7 +55,7 @@ export function AudienceSections() {
               <p>Нормально, «кради как художник».</p>
               <p>А если хочешь зарабатывать вместе со мной,<br className={styles.mobileFluidBreak} />{" "}то переходи ниже:</p>
             </div>
-            <a className={styles.actionButton} href="#contacts">Посмотреть, как можем работать вместе <span>→</span></a>
+            <a className={styles.actionButton} href="/partners">Посмотреть, как можем работать вместе <span>→</span></a>
           </div>
           <div className={`${styles.scene} ${styles.partnerScene}`}>
             <Image src="/images/home/source-partner-web-v2.svg" alt="Рабочее место маркетолога с аналитикой и заметками" fill sizes="(max-width: 900px) 100vw, 55vw" />

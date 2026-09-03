@@ -51,9 +51,9 @@ export function FunnelIntro() {
   );
 }
 
-export function TrustSection() {
+export function TrustSection({ tone = "green" }: { tone?: "green" | "blue" }) {
   return (
-    <section className={styles.trust} aria-labelledby="trust-title">
+    <section className={styles.trust} data-tone={tone} aria-labelledby="trust-title">
       <div className={styles.frame}>
         <div className={styles.trustGrid}>
           <div className={styles.trustCopy}>

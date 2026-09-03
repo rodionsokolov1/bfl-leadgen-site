@@ -14,7 +14,7 @@ export function SiteFooter() {
     <footer className={`${styles.section} ${styles.footer}`} id="contacts">
       <div className={`${styles.frame} ${styles.footerCard}`}>
         <div className={styles.footerIdentity}>
-          <Image className={styles.footerLogo} src="/images/home/brand-logo.svg" alt="Логотип Родион Соколов" width={100} height={100} />
+          <Image className={styles.footerLogo} src="/images/brand/rodion-avatar-logo.png" alt="Портрет Родиона Соколова" width={100} height={100} />
           <div><strong>Родион Соколов</strong><span>Маркетинг для БФЛ</span><a href="/privacy">Политика конфиденциальности</a></div>
         </div>
         <p className={styles.footerExperience}>Привлекаю клиентов<br />на БФЛ с 2019 года</p>

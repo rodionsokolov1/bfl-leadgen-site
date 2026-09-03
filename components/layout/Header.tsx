@@ -22,7 +22,7 @@ export function Header({ accent = "#d24b4b", homeHref = "#top" }: HeaderProps) {
   return (
     <header className={styles.header} style={style}>
       <a className={styles.identity} href={homeHref} aria-label="Родион Соколов — на начало страницы">
-        <Image className={styles.brandLogo} src="/images/home/brand-logo.svg" alt="Логотип Родион Соколов" width={90} height={90} />
+        <Image className={styles.brandLogo} src="/images/brand/rodion-avatar-logo.png" alt="Портрет Родиона Соколова" width={90} height={90} priority />
         <span className={styles.identityText}>
           <strong>Родион Соколов</strong>
           <small>Маркетинг для БФЛ</small>

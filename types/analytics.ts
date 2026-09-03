@@ -33,6 +33,14 @@ export const analyticsEventNames = [
   "MULTI_GEO_VIDEO_PLAY",
   "MULTI_GEO_SYSTEM_VIEW",
   "MULTI_GEO_FINAL_CTA",
+  "MULTI_CITY_QUIZ_START",
+  "MULTI_CITY_QUIZ_COMPLETE",
+  "MULTI_CITY_QUIZ_TELEGRAM",
+  "MULTI_CITY_QUIZ_VK",
+  "SMALL_COMPANY_QUIZ_START",
+  "SMALL_COMPANY_QUIZ_COMPLETE",
+  "SMALL_COMPANY_QUIZ_TELEGRAM",
+  "SMALL_COMPANY_QUIZ_VK",
 ] as const;
 
 export type AnalyticsEventName = (typeof analyticsEventNames)[number];

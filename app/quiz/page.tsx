@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/Header";
 import { ProgressiveFunnel } from "@/components/small-company/ProgressiveFunnel";
 import { ProofVideoTabs } from "@/components/small-company/ProofVideoTabs";
 import { SmallPageAnalytics } from "@/components/small-company/SmallPageAnalytics";
+import { SmallCompanyTestPeriodQuiz } from "@/components/small-company/SmallCompanyTestPeriodQuiz";
 import { FunnelIntro, SmallCompanyHero, TrustSection } from "@/components/small-company/StaticSections";
 import { smallCompanyConfig } from "@/config/small-company";
 
@@ -28,6 +29,7 @@ export default function QuizPage() {
       <ProgressiveFunnel />
       <TrustSection />
       <ProofVideoTabs />
+      <SmallCompanyTestPeriodQuiz />
       <SiteFooter />
     </main>
   );

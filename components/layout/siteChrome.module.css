@@ -13,7 +13,7 @@
 }
 
 .identity { display: flex; align-items: center; gap: 26px; }
-.brandLogo { display: block; flex: 0 0 auto; width: 90px; height: 90px; object-fit: contain; }
+.brandLogo { display: block; flex: 0 0 auto; width: 90px; height: 90px; border: 2px solid color-mix(in srgb, var(--header-accent) 55%, transparent); border-radius: 50%; object-fit: cover; }
 .identityText { display: grid; gap: 2px; }
 .identityText strong { font-size: clamp(24px, 1.7vw, 34px); line-height: 1.2; }
 .identityText small { color: var(--muted); font-size: clamp(17px, 1.1vw, 23px); }
