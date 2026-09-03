@@ -36,7 +36,7 @@ export function AudienceSections() {
             </header>
             <div className={styles.bodyCopy}>
               <p>Тебе, скорее всего, уже нужны не просто заявки.<br className={styles.mobileFluidBreak} />{" "}Нужно попадать в KPI по качеству, встречам<br className={styles.mobileFluidBreak} />{" "}и договорам — и масштабировать то, что<br className={styles.mobileFluidBreak} />{" "}действительно приносит деньги.</p>
-              <p><strong>Посмотри, как я привлёк более 62 000 заявок<br className={styles.mobileFluidBreak} />{" "}за 8 месяцев 2026 года</strong> на более чем <strong>55 разных</strong><br className={styles.mobileFluidBreak} />{" "}посадочных страничек для своих партнёров.</p>
+              <p><strong>Посмотри, как я привлёк более 62 500 заявок<br className={styles.mobileFluidBreak} />{" "}за 8 месяцев 2026 года</strong> на более чем <strong>60 разных</strong><br className={styles.mobileFluidBreak} />{" "}посадочных страничек для своих партнёров.</p>
             </div>
             <a className={styles.actionButton} href="/multi-geo" data-analytics-event="SEGMENT_MULTI_GEO_OPEN">Посмотреть, как устроена система <span>→</span></a>
           </div>

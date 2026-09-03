@@ -49,5 +49,5 @@ export const smallCompanyPains = [
 export const trustFacts = [
   { value: "С 2015", label: "в интернет-рекламе" },
   { value: "С 2019", label: "в нише БФЛ" },
-  { value: "62 000+", label: "заявок на БФЛ за 8 месяцев 2026 года" },
+  { value: "62 500+", label: "заявок на БФЛ за 8 месяцев 2026 года" },
 ] as const;

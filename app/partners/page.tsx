@@ -32,7 +32,7 @@ const partnerFit = [
   "покупают лиды и хотят собственный источник клиентов",
   "работают в нескольких городах и хотят масштабироваться",
   "меняли подрядчиков и не понимают, где именно проблема",
-  "готовы вкладываться в систему, а не искать “волшебную связку”",
+  "готовы вкладываться в систему, а не искать «волшебную связку»",
 ] as const;
 
 export default function PartnersPage() {
@@ -102,7 +102,7 @@ export default function PartnersPage() {
           <div className={styles.trustHeading}>
             <span className={styles.label}>КТО Я</span>
             <h2 id="partner-trust-title">Я занимаюсь лидогенерацией БФЛ с 2019 года</h2>
-            <p>Не продаю пачки готовых лидов и не ограничиваюсь “настройкой Директа”.<br />Я собираю под конкретную юридическую компанию систему привлечения клиентов и смотрю на всю экономику — от рекламы до встреч и договоров.</p>
+            <p>Не продаю пачки готовых лидов и не ограничиваюсь «настройкой Директа».<br />Я собираю под конкретную юридическую компанию систему привлечения клиентов и смотрю на всю экономику — от рекламы до встреч и договоров.</p>
           </div>
           <ul className={styles.factGrid}>
             {trustFacts.map((fact) => <li key={fact.value}><strong>{fact.value}</strong><span>{fact.label}</span></li>)}
@@ -115,7 +115,7 @@ export default function PartnersPage() {
         <div className={styles.frame}>
           <div className={styles.sectionHeading}>
             <span className={styles.label}>ПОДХОД К РАБОТЕ</span>
-            <h2 id="approach-title">Я не начинаю с фразы “давай запустим рекламу”</h2>
+            <h2 id="approach-title">Я не начинаю с фразы «давай запустим рекламу»</h2>
           </div>
           <ol className={styles.stepGrid}>
             {workSteps.map((step, index) => (

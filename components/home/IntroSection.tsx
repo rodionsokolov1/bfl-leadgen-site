@@ -26,7 +26,7 @@ export function IntroSection() {
         </div>
 
         <a className={styles.introPrompt} href="#private-lawyer">
-          <strong>Давай для начала определим кто ты<br className={styles.mobileFluidBreak} />{" "}и чем я могу быть тебе полезен:</strong>
+          <strong>Давай для начала определим, кто ты<br className={styles.mobileFluidBreak} />{" "}и чем я могу быть тебе полезен:</strong>
           <span>ЛИСТАЙ НИЖЕ</span><i aria-hidden="true">↓</i>
         </a>
       </div>
