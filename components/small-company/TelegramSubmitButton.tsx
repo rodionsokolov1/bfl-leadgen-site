@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 
 import { getAttribution } from "@/lib/attribution";
 import { trackEvent } from "@/lib/analytics/events";
@@ -23,19 +23,22 @@ type TelegramSubmitButtonProps = {
 export function TelegramSubmitButton({ children, className, disabled = false, input, source }: TelegramSubmitButtonProps) {
   const [state, setState] = useState<SubmitState>("default");
   const [message, setMessage] = useState("");
+  const submittingRef = useRef(false);
 
   async function handleSubmit() {
-    if (!input || state === "submitting") return;
+    if (!input || submittingRef.current) return;
+    submittingRef.current = true;
     setState("submitting");
     setMessage("");
-    const metrikaClientId = await getMetrikaClientId();
-    if (metrikaClientId) mergeFirstTouchAttribution({ ym_client_id: metrikaClientId });
-    const attributionContext = getAttribution();
-    const attribution = assessmentAttributionFromContext(attributionContext);
-    trackEvent("FUNNEL_TELEGRAM_CTA_CLICKED", { segment: "small_company", source });
     try {
+      const metrikaClientId = await getMetrikaClientId();
+      if (metrikaClientId) mergeFirstTouchAttribution({ ym_client_id: metrikaClientId });
+      const attributionContext = getAttribution();
+      const attribution = assessmentAttributionFromContext(attributionContext);
+      trackEvent("FUNNEL_TELEGRAM_CTA_CLICKED", { segment: "small_company", source });
       const payload = buildFunnelAssessmentPayload(input, attribution);
       const result = await submitFunnelAssessment(payload);
+      if (!result.telegramUrl) throw new Error("Telegram URL is missing.");
       trackEvent("FUNNEL_TELEGRAM_CTA_CLICK", {
         segment: "small_company",
         source,
@@ -50,22 +53,18 @@ export function TelegramSubmitButton({ children, className, disabled = false, in
       });
       trackEvent("FUNNEL_ASSESSMENT_SAVED", { segment: "small_company", source, mocked: result.mocked });
       setState("success");
-      if (result.telegramUrl) {
-        setMessage(result.mocked ? "Dev mock сохранён. Открываю Telegram…" : "Воронка сохранена. Открываю Telegram…");
-        window.location.assign(result.telegramUrl);
-      } else {
-        setMessage("Dev mock сохранён. Добавь NEXT_PUBLIC_TELEGRAM_BOT_USERNAME, чтобы включить переход в Telegram.");
-      }
-    } catch (error) {
+      window.location.assign(result.telegramUrl);
+    } catch {
+      submittingRef.current = false;
       setState("error");
-      setMessage(error instanceof Error ? error.message : "Не удалось отправить воронку. Попробуй ещё раз.");
+      setMessage("Не удалось подготовить разбор. Попробуй ещё раз.");
     }
   }
 
   return (
     <div>
-      <button className={className} type="button" disabled={disabled || !input || state === "submitting"} onClick={handleSubmit}>
-        {state === "submitting" ? "Сохраняю воронку…" : children}
+      <button className={className} type="button" disabled={disabled || !input || state === "submitting" || state === "success"} onClick={handleSubmit}>
+        {state === "submitting" || state === "success" ? "Готовлю разбор…" : children}
       </button>
       {message ? <p aria-live="polite" role={state === "error" ? "alert" : "status"}>{message}</p> : null}
     </div>

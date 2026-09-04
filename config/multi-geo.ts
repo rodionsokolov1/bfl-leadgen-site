@@ -1,11 +1,14 @@
-export const MULTI_GEO_VIDEO_URL = process.env.NEXT_PUBLIC_MULTI_GEO_VIDEO_URL ?? "";
+export const MULTI_GEO_VIDEO_SOURCES = {
+  youtube: "https://www.youtube-nocookie.com/embed/9SrY_xPWSOM?autoplay=1&rel=0",
+  vk: "https://vkvideo.ru/video_ext.php?oid=-165935805&id=456239024&hd=2&autoplay=1",
+} as const;
 
 const telegramUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME?.replace(/^@/, "");
 const vkContactUrl = process.env.NEXT_PUBLIC_VK_CONTACT_URL?.trim() ?? "";
 
 export const multiGeoConfig = {
   accent: "#3287c8",
-  videoUrl: MULTI_GEO_VIDEO_URL,
+  videoSources: MULTI_GEO_VIDEO_SOURCES,
   quiz: {
     endpoint: process.env.NEXT_PUBLIC_MULTI_CITY_QUIZ_ENDPOINT ?? "",
     telegramUsername: telegramUsername ?? "",

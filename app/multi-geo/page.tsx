@@ -103,7 +103,7 @@ export default function MultiGeoPage() {
           <div className={styles.videoHeading}>
             <div><span>ВИДЕО · 7–9 МИНУТ</span><h2 id="video-title">Как я управляю рекламой БФЛ на масштабе: 62 500+ заявок, на 60+ сайтах и сотни городов в РФ</h2></div>
           </div>
-          <MultiGeoVideo url={multiGeoConfig.videoUrl} />
+          <MultiGeoVideo sources={multiGeoConfig.videoSources} />
           <p className={styles.videoNote}>не секретная связка — архитектура работы</p>
         </div>
       </section>
